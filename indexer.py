@@ -52,12 +52,8 @@ def tokenize(html_file):
     tbr = set()
 
     for i in range(len(tokens)):
-        if tokens[i] in stop_word or len(tokens[i]) == 1 :
-            if tokens[i] not in tbr:
-                tbr.add(tokens[i])
-        elif re.search("[^a-z]", tokens[i]):
-            if tokens[i] not in tbr:
-                tbr.add(tokens[i])
+        if len(tokens[i]) == 1 or re.search("[^a-z]", tokens[i]):
+            tbr.add(tokens[i])
 
     # clean up for the tokens
     tokens = set([w for w in tokens if w not in tbr])
@@ -94,7 +90,7 @@ def fetch_data():
                 print(tokens)
             else:
                 dup_doc += 1
-           
+
         # go to parent folder
         os.chdir(os.path.dirname(os.getcwd()))
 
@@ -141,4 +137,4 @@ def main():
     write_file()
 
 if __name__ == "__main__":
-   main()
+    main()
