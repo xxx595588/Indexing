@@ -83,7 +83,8 @@ def fetch_data():
                 dup.add(hash_num)
                 for w in tokens:
                     if index.get(w) is None:
-                        index[w] = [html_file]
+                        if w in words.words():
+                            index[w] = [html_file]
                     else:
                         index[w].append(html_file)
 
