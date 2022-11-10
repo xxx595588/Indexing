@@ -13,6 +13,9 @@ tag = ["title", "p", "h1", "h2", "h3", "h4", "h5", "h6"]
 # map an id to url, the structure is {url: ID}
 url_map = dict()
 
+# reversed version of url_map (for better lookup)
+url_lookup = dict()
+
 # The structure of the index_freq is {word: {ID: freq}}, key is a string and value is a dictionary
 index_freq = dict()
 
@@ -135,7 +138,7 @@ def fetch_data():
 
 # generate the ouput file
 def write_file():
-    global index_freq, index_pos, total_doc, indexed_doc, dup_doc
+    global index_freq, index_pos, url_map, url_lookup, total_doc, indexed_doc, dup_doc
 
     # sort the words
     index_freq = dict(sorted(index_freq.items(), key=lambda item: item[0]))
@@ -144,6 +147,10 @@ def write_file():
     # sort the frequency by ID in index_freq
     for i in index_freq:
         index_freq[i] = dict(sorted(index_freq[i].items(), key=lambda item: item[0]))
+
+
+    # construct the url lookup table
+    url_lookup = {id: url for url, id in url_map.items()}
 
     # ouput the index with frequency:
     # {word: {ID: freq}}
@@ -157,11 +164,16 @@ def write_file():
         f.write(f"{i} -> ID/pos: {index_pos[i]}\n")
     f.close()
 
-    # ouput the index with position:
-    # {word: [(ID: pos)]}
+    # output the url map
     f = open("url_map.txt", "w")
     for i in url_map:
         f.write(f"{i}: {url_map[i]}\n")
+    f.close()
+
+    # output the url lookup table
+    f = open("url_lookup.txt", "w")
+    for i in url_lookup:
+        f.write(f"{i}: {url_lookup[i]}\n")
     f.close()
 
     # contain some general info for the indexing process
