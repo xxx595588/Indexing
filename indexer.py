@@ -4,16 +4,20 @@ import nltk
 import re
 import time
 from bs4 import BeautifulSoup
-from nltk.corpus import words
 
-stop_word = set(['', 'a', 'able', 'about', 'above', 'abst', 'accordance', 'according', 'accordingly', 'across', 'act', 'actually', 'added', 'adj', 'affected', 'affecting', 'affects', 'after', 'afterwards', 'again', 'against', 'ah', 'all', 'almost', 'alone', 'along', 'already', 'also', 'although', 'always', 'am', 'among', 'amongst', 'an', 'and', 'announce', 'another', 'any', 'anybody', 'anyhow', 'anymore', 'anyone', 'anything', 'anyway', 'anyways', 'anywhere', 'apparently', 'approximately', 'are', 'aren', 'arent', 'arise', 'around', 'as', 'aside', 'ask', 'asking', 'at', 'auth', 'available', 'away', 'awfully', 'b', 'back', 'be', 'became', 'because', 'become', 'becomes', 'becoming', 'been', 'before', 'beforehand', 'begin', 'beginning', 'beginnings', 'begins', 'behind', 'being', 'believe', 'below', 'beside', 'besides', 'between', 'beyond', 'biol', 'both', 'brief', 'briefly', 'but', 'by', 'c', 'ca', 'came', 'can', 'cannot', "can't", 'cause', 'causes', 'certain', 'certainly', 'co', 'com', 'come', 'comes', 'contain', 'containing', 'contains', 'could', 'couldnt', 'd', 'date', 'did', "didn't", 'different', 'do', 'does', "doesn't", 'doing', 'done', "don't", 'down', 'downwards', 'due', 'during', 'e', 'each', 'ed', 'edu', 'effect', 'eg', 'eight', 'eighty', 'either', 'else', 'elsewhere', 'end', 'ending', 'enough', 'especially', 'et', 'et-al', 'etc', 'even', 'ever', 'every', 'everybody', 'everyone', 'everything', 'everywhere', 'ex', 'except', 'f', 'far', 'few', 'ff', 'fifth', 'first', 'five', 'fix', 'followed', 'following', 'follows', 'for', 'former', 'formerly', 'forth', 'found', 'four', 'from', 'further', 'furthermore', 'g', 'gave', 'get', 'gets', 'getting', 'give', 'given', 'gives', 'giving', 'go', 'goes', 'gone', 'got', 'gotten', 'h', 'had', 'happens', 'hardly', 'has', "hasn't", 'have', "haven't", 'having', 'he', 'hed', 'hence', 'her', 'here', 'hereafter', 'hereby', 'herein', 'heres', 'hereupon', 'hers', 'herself', 'hes', 'hi', 'hid', 'him', 'himself', 'his', 'hither', 'home', 'how', 'howbeit', 'however', 'hundred', 'i', 'id', 'ie', 'if', "i'll", 'im', 'immediate', 'immediately', 'importance', 'important', 'in', 'inc', 'indeed', 'index', 'information', 'instead', 'into', 'invention', 'inward', 'is', "isn't", 'it', 'itd', "it'll", 'its', 'itself', "i've", 'j', 'just', 'k', 'keep\tkeeps', 'kept', 'kg', 'km', 'know', 'known', 'knows', 'l', 'largely', 'last', 'lately', 'later', 'latter', 'latterly', 'least', 'less', 'lest', 'let', 'lets', 'like', 'liked', 'likely', 'line', 'little', "'ll", 'look', 'looking', 'looks', 'ltd', 'm', 'made', 'mainly', 'make', 'makes', 'many', 'may', 'maybe', 'me', 'mean', 'means', 'meantime', 'meanwhile', 'merely', 'mg', 'might', 'million', 'miss', 'ml', 'more', 'moreover', 'most', 'mostly', 'mr', 'mrs', 'much', 'mug', 'must', 'my', 'myself', 'n', 'na', 'name', 'namely', 'nay', 'nd', 'near', 'nearly', 'necessarily', 'necessary', 'need', 'needs', 'neither', 'never', 'nevertheless', 'new', 'next', 'nine', 'ninety', 'no', 'nobody', 'non', 'none', 'nonetheless', 'noone', 'nor', 'normally', 'nos', 'not', 'noted', 'nothing', 'now', 'nowhere', 'o', 'obtain', 'obtained', 'obviously', 'of', 'off', 'often', 'oh', 'ok', 'okay', 'old', 'omitted', 'on', 'once', 'one', 'ones', 'only', 'onto', 'or', 'ord', 'other', 'others', 'otherwise', 'ought', 'our', 'ours', 'ourselves', 'out', 'outside', 'over', 'overall', 'owing', 'own', 'p', 'page', 'pages', 'part', 'particular', 'particularly', 'past', 'per', 'perhaps', 'placed', 'please', 'plus', 'poorly', 'possible', 'possibly', 'potentially', 'pp', 'predominantly', 'present', 'previously', 'primarily', 'probably', 'promptly', 'proud', 'provides', 'put', 'q', 'que', 'quickly', 'quite', 'qv', 'r', 'ran', 'rather', 'rd', 're', 'readily', 'really', 'recent', 'recently', 'ref', 'refs', 'regarding', 'regardless', 'regards', 'related', 'relatively', 'research', 'respectively', 'resulted', 'resulting', 'results', 'right', 'run', 's', 'said', 'same', 'saw', 'say', 'saying', 'says', 'sec', 'section', 'see', 'seeing', 'seem', 'seemed', 'seeming', 'seems', 'seen', 'self', 'selves', 'sent', 'seven', 'several', 'shall', 'she', 'shed', "she'll", 'shes', 'should', "shouldn't", 'show', 'showed', 'shown', 'showns', 'shows', 'significant', 'significantly', 'similar', 'similarly', 'since', 'six', 'slightly', 'so', 'some', 'somebody', 'somehow', 'someone', 'somethan', 'something', 'sometime', 'sometimes', 'somewhat', 'somewhere', 'soon', 'sorry', 'specifically', 'specified', 'specify', 'specifying', 'still', 'stop', 'strongly', 'sub', 'substantially', 'successfully', 'such', 'sufficiently', 'suggest', 'sup', 'sure\tt', 'take', 'taken', 'taking', 'tell', 'tends', 'th', 'than', 'thank', 'thanks', 'thanx', 'that', "that'll", 'thats', "that've", 'the', 'their', 'theirs', 'them', 'themselves', 'then', 'thence', 'there', 'thereafter', 'thereby', 'thered', 'therefore', 'therein', "there'll", 'thereof', 'therere', 'theres', 'thereto', 'thereupon', "there've", 'these', 'they', 'theyd', "they'll", 'theyre', "they've", 'think', 'this', 'those', 'thou', 'though', 'thoughh', 'thousand', 'throug', 'through', 'throughout', 'thru', 'thus', 'til', 'tip', 'to', 'together', 'too', 'took', 'toward', 'towards', 'tried', 'tries', 'truly', 'try', 'trying', 'ts', 'twice', 'two', 'u', 'un', 'under', 'unfortunately', 'unless', 'unlike', 'unlikely', 'until', 'unto', 'up', 'upon', 'ups', 'us', 'use', 'used', 'useful', 'usefully', 'usefulness', 'uses', 'using', 'usually', 'v', 'value', 'various', "'ve", 'very', 'via', 'viz', 'vol', 'vols', 'vs', 'w', 'want', 'wants', 'was', 'wasnt', 'way', 'we', 'wed', 'welcome', "we'll", 'went', 'were', 'werent', "we've", 'what', 'whatever', "what'll", 'whats', 'when', 'whence', 'whenever', 'where', 'whereafter', 'whereas', 'whereby', 'wherein', 'wheres', 'whereupon', 'wherever', 'whether', 'which', 'while', 'whim', 'whither', 'who', 'whod', 'whoever', 'whole', "who'll", 'whom', 'whomever', 'whos', 'whose', 'why', 'widely', 'willing', 'wish', 'with', 'within', 'without', 'wont', 'words', 'world', 'would', 'wouldnt', 'www', 'x', 'y', 'yes', 'yet', 'you', 'youd', "you'll", 'your', 'youre', 'yours', 'yourself', 'yourselves', "you've", 'z', 'zero'])
 ori_loc = os.getcwd()
 
 # focuse on these tags for indexing
 tag = ["title", "p", "h1", "h2", "h3", "h4", "h5", "h6"]
 
-# The structure of the index is {word: [documnt ID]}, key is a string and value is a list
-index = dict()
+# map an id to url, the structure is {url: ID}
+url_map = dict()
+
+# The structure of the index_freq is {word: {ID: freq}}, key is a string and value is a dictionary
+index_freq = dict()
+
+# The structure of the index_pos is {word: [(ID, pos)]}, key is a string and value is a list of tuple
+index_pos = dict()
 
 # Set contain indexed document to avoid same content
 dup = set()
@@ -36,6 +40,7 @@ def tokenize(html_file):
     global tag
 
     raw_data = json.load(open(html_file))
+    # get the content
     soup = BeautifulSoup(raw_data["content"], features = "html.parser")
     tag_list = soup.find_all(tag, text=True)
 
@@ -51,36 +56,47 @@ def tokenize(html_file):
     # to be removed word set (number or special character)
     tbr = set()
 
-    for i in range(len(tokens)):
-        if len(tokens[i]) == 1 or re.search("[^a-z]", tokens[i]):
-            tbr.add(tokens[i])
+    for w in tokens:
+        if len(w) == 1 or re.search("[^a-z]", w):
+            tbr.add(w)
 
     tokens_list = [w for w in tokens if w not in tbr]
 
+    # dictionary of word/freq
     tokens_freq = dict()
+    # dictionary of word/pos
+    tokens_pos = dict()
 
-    for word in tokens_list:
-        if word in tokens_freq:
-            tokens_freq[word] += 1
+    for i in range(len(tokens_list)):
+        # count for the word's frequency
+        if tokens_list[i] in tokens_freq:
+            tokens_freq[tokens_list[i]] += 1
         else:
-            tokens_freq[word] = 1
+            tokens_freq[tokens_list[i]] = 1
 
-    return tokens_freq
+        # indicate the word's position
+        if tokens_list[i] in tokens_pos:
+            tokens_pos[tokens_list[i]].append(i+1)
+        else:
+            tokens_pos[tokens_list[i]] = [i+1]
+
+    return tokens_freq, tokens_pos, raw_data["url"]
 
 # fetch all json file and tokenize the text from its content
 def fetch_data():
-    global ori_loc
+    global ori_loc, url_map
     path = input("Input the path: ")
     os.chdir(path)
 
-    global index, total_doc, indexed_doc, dup_doc
+    global index_freq, total_doc, indexed_doc, dup_doc
 
     for web_folder in os.listdir():
         os.chdir(web_folder)
         for html_file in os.listdir():
-
             # words with frequency in dict -> words: freq
-            tokens_freq = tokenize(html_file)
+            tokens_freq, tokens_pos, url = tokenize(html_file)
+
+            print(f"Processing {url}")
 
             # set of tokens without repeating
             tokens = tokens_freq.keys()
@@ -91,16 +107,24 @@ def fetch_data():
             if hash_num not in dup:
                 indexed_doc += 1
                 dup.add(hash_num)
-                for w in tokens:
-                    if index.get(w) is None:
-                        if w in words.words():
-                            new_dict = dict()
-                            new_dict[html_file] = tokens_freq[w]
-                            index[w] = new_dict
-                    else:
-                        index[w][html_file] = tokens_freq[w]
+                url_map[url] = len(url_map) + 1
 
-                print(tokens)
+                for w in tokens:
+                    # section for index frequency
+                    if index_freq.get(w) is None:
+                        new_dict = dict()
+                        new_dict[url_map[url]] = tokens_freq[w]
+                        index_freq[w] = new_dict
+                    else:
+                        index_freq[w][url_map[url]] = tokens_freq[w]
+
+                    # section for index position
+                    if index_pos.get(w) is None:
+                        index_pos[w] = list()
+                    
+                    pos_list = tokens_pos[w]
+                    for i in pos_list:
+                        index_pos[w].append((url_map[url], i))
             else:
                 dup_doc += 1
 
@@ -111,33 +135,46 @@ def fetch_data():
 
 # generate the ouput file
 def write_file():
-    global index, total_doc, indexed_doc, dup_doc
+    global index_freq, index_pos, total_doc, indexed_doc, dup_doc
 
     # sort the words
-    index = dict(sorted(index.items(), key=lambda item: item[0]))
+    index_freq = dict(sorted(index_freq.items(), key=lambda item: item[0]))
+    index_pos = dict(sorted(index_pos.items(), key=lambda item: item[0]))
 
-    for i in index:
-        index[i] = dict(sorted(index[i].items(), key=lambda item: item[0]))
-
-    # ouput the indexer:
-    # word: frequency -> ID list(posting)
-    f_1 = open("indexer_output.txt", "w")
-    for i in index:
-        f_1.write(f"{i}: {len(index[i])} -> ID/freq: {index[i]}\n")
-    f_1.close()
+    # sort the frequency by ID in index_freq
+    for i in index_freq:
+        index_freq[i] = dict(sorted(index_freq[i].items(), key=lambda item: item[0]))
 
     # contain some general info for the indexing process
-    f_2 = open("general_output.txt", "w")
-    file_stat = os.stat("indexer_output.txt")
-    file_size = file_stat.st_size / 1000
+    f_1 = open("general_output.txt", "w")
+    file_size = (os.stat("indexer_freq.txt").st_size + os.stat("indexer_pos.txt").st_size)/ 1000
     elapsed_time = end_time - start_time
-    f_2.write(f"Total number of documents: {total_doc}\n"
+    f_1.write(f"Total number of documents: {total_doc}\n"
                 + f"Number of indexed documents: {indexed_doc}\n"
-                + f"Numbe of duplicated documents: {dup_doc}\n"
+                + f"Number of duplicated documents: {dup_doc}\n"
                 + f"Total runtime: {elapsed_time} seconds\n"
-                + f"Number of unique tokens: {len(index)}\n"
+                + f"Number of unique tokens: {len(index_freq)}\n"
                 + f"Total size of index: {file_size}KB")
+    f_1.close()
 
+    # ouput the index with frequency:
+    # {word: {ID: freq}}
+    f_2 = open("indexer_freq.txt", "w")
+    for i in index_freq:
+        f_2.write(f"{i}: {len(index_freq[i])} -> ID/freq: {index_freq[i]}\n")
+    f_2.close()
+
+    f_3 = open("indexer_pos.txt", "w")
+    for i in index_pos:
+        f_3.write(f"{i} -> ID/pos: {index_pos[i]}\n")
+    f_3.close()
+
+    # ouput the index with position:
+    # {word: [(ID: pos)]}
+    f_4 = open("url_map.txt", "w")
+    for i in url_map:
+        f_4.write(f"{i}: {url_map[i]}\n")
+    f_4.close()
 
 def main():
     global start_time
