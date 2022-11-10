@@ -145,36 +145,36 @@ def write_file():
     for i in index_freq:
         index_freq[i] = dict(sorted(index_freq[i].items(), key=lambda item: item[0]))
 
+    # ouput the index with frequency:
+    # {word: {ID: freq}}
+    f = open("indexer_freq.txt", "w")
+    for i in index_freq:
+        f.write(f"{i}: {len(index_freq[i])} -> ID/freq: {index_freq[i]}\n")
+    f.close()
+
+    f = open("indexer_pos.txt", "w")
+    for i in index_pos:
+        f.write(f"{i} -> ID/pos: {index_pos[i]}\n")
+    f.close()
+
+    # ouput the index with position:
+    # {word: [(ID: pos)]}
+    f = open("url_map.txt", "w")
+    for i in url_map:
+        f.write(f"{i}: {url_map[i]}\n")
+    f.close()
+
     # contain some general info for the indexing process
-    f_1 = open("general_output.txt", "w")
+    f = open("general_output.txt", "w")
     file_size = (os.stat("indexer_freq.txt").st_size + os.stat("indexer_pos.txt").st_size)/ 1000
     elapsed_time = end_time - start_time
-    f_1.write(f"Total number of documents: {total_doc}\n"
+    f.write(f"Total number of documents: {total_doc}\n"
                 + f"Number of indexed documents: {indexed_doc}\n"
                 + f"Number of duplicated documents: {dup_doc}\n"
                 + f"Total runtime: {elapsed_time} seconds\n"
                 + f"Number of unique tokens: {len(index_freq)}\n"
                 + f"Total size of index: {file_size}KB")
-    f_1.close()
-
-    # ouput the index with frequency:
-    # {word: {ID: freq}}
-    f_2 = open("indexer_freq.txt", "w")
-    for i in index_freq:
-        f_2.write(f"{i}: {len(index_freq[i])} -> ID/freq: {index_freq[i]}\n")
-    f_2.close()
-
-    f_3 = open("indexer_pos.txt", "w")
-    for i in index_pos:
-        f_3.write(f"{i} -> ID/pos: {index_pos[i]}\n")
-    f_3.close()
-
-    # ouput the index with position:
-    # {word: [(ID: pos)]}
-    f_4 = open("url_map.txt", "w")
-    for i in url_map:
-        f_4.write(f"{i}: {url_map[i]}\n")
-    f_4.close()
+    f.close()
 
 def main():
     global start_time
