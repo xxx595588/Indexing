@@ -3,9 +3,14 @@ import json
 import nltk
 import re
 import time
+import posting
+import sys
 from bs4 import BeautifulSoup
 
 ori_loc = os.getcwd()
+
+# combine version of frequency and position
+final_index = dict()
 
 # focuse on these tags for indexing
 tag = ["title", "p", "h1", "h2", "h3", "h4", "h5", "h6"]
@@ -77,7 +82,7 @@ def tokenize(html_file):
         else:
             tokens_freq[tokens_list[i]] = 1
 
-        # indicate the word's position
+        # indicate the word's position -> word:[pos]
         if tokens_list[i] in tokens_pos:
             tokens_pos[tokens_list[i]].append(i+1)
         else:
@@ -123,11 +128,10 @@ def fetch_data():
 
                     # section for index position
                     if index_pos.get(w) is None:
-                        index_pos[w] = list()
+                        index_pos[w] = dict()
+
+                    index_pos[w][url_map[url]] = tokens_pos[w]
                     
-                    pos_list = tokens_pos[w]
-                    for i in pos_list:
-                        index_pos[w].append((url_map[url], i))
             else:
                 dup_doc += 1
 
@@ -136,21 +140,39 @@ def fetch_data():
 
     os.chdir(ori_loc)
 
+# wrap up for the final indexer (combine index_freq and index_pos)
+def wrap_up():
+    global final_index
+
+    for i in range(len(index_freq)):
+        key_list = list(index_freq.keys())
+        word = key_list[i]
+
+        new_posting = posting.posting(word, dict(), list())
+        # update for the ID/freq dictionary
+        new_posting.freq_add(index_freq[key_list[i]])
+        # update for the ID/pos list
+        new_posting.pos_add(index_pos[key_list[i]])
+
+        final_index[word] = new_posting
+
 # generate the ouput file
 def write_file():
-    global index_freq, index_pos, url_map, url_lookup, total_doc, indexed_doc, dup_doc
+    global index_freq, index_pos, final_index, url_map, url_lookup, total_doc, indexed_doc, dup_doc
 
     # sort the words
     index_freq = dict(sorted(index_freq.items(), key=lambda item: item[0]))
     index_pos = dict(sorted(index_pos.items(), key=lambda item: item[0]))
+    final_index = dict(sorted(final_index.items(), key=lambda item: item[0]))
 
     # sort the frequency by ID in index_freq
     for i in index_freq:
         index_freq[i] = dict(sorted(index_freq[i].items(), key=lambda item: item[0]))
 
-
     # construct the url lookup table
     url_lookup = {id: url for url, id in url_map.items()}
+
+    """
 
     # ouput the index with frequency:
     # {word: {ID: freq}}
@@ -159,33 +181,44 @@ def write_file():
         f.write(f"{i}: {len(index_freq[i])} -> ID/freq: {index_freq[i]}\n")
     f.close()
 
+    # ouput the index with pos:
+    # {word: {ID: [pos]}}
     f = open("indexer_pos.txt", "w")
     for i in index_pos:
         f.write(f"{i} -> ID/pos: {index_pos[i]}\n")
     f.close()
 
     # output the url map
+    # url: ID
     f = open("url_map.txt", "w")
     for i in url_map:
         f.write(f"{i}: {url_map[i]}\n")
     f.close()
 
     # output the url lookup table
+    # ID: url
     f = open("url_lookup.txt", "w")
     for i in url_lookup:
         f.write(f"{i}: {url_lookup[i]}\n")
     f.close()
 
+    """
+    # output the final index
+    f = open("indexer.txt", "w")
+    for i in final_index:
+        f.write(f"{i}: {len(final_index)} -> ID/freq: {final_index[i].get_freq()}, ID/pos: {final_index[i].get_pos()}\n")
+    f.close()
+
     # contain some general info for the indexing process
     f = open("general_output.txt", "w")
-    file_size = (os.stat("indexer_freq.txt").st_size + os.stat("indexer_pos.txt").st_size)/ 1000
+    index_size = sys.getsizeof(final_index) / 1000
     elapsed_time = end_time - start_time
     f.write(f"Total number of documents: {total_doc}\n"
                 + f"Number of indexed documents: {indexed_doc}\n"
                 + f"Number of duplicated documents: {dup_doc}\n"
                 + f"Total runtime: {elapsed_time} seconds\n"
-                + f"Number of unique tokens: {len(index_freq)}\n"
-                + f"Total size of index: {file_size}KB")
+                + f"Number of unique tokens: {len(final_index)}\n"
+                + f"Total size of index: {index_size}KB")
     f.close()
 
 def main():
@@ -197,6 +230,7 @@ def main():
     global end_time
     end_time = time.time()
 
+    wrap_up()
     write_file()
 
 if __name__ == "__main__":
