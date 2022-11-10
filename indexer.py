@@ -206,7 +206,7 @@ def write_file():
     # output the final index
     f = open("indexer.txt", "w")
     for i in final_index:
-        f.write(f"{i}: {len(final_index)} -> ID/freq: {final_index[i].get_freq()}, ID/pos: {final_index[i].get_pos()}\n")
+        f.write(f"{i}: {len(final_index[i].get_freq())} -> ID/freq: {final_index[i].get_freq()}, ID/pos: {final_index[i].get_pos()}\n")
     f.close()
 
     # contain some general info for the indexing process
