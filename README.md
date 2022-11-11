@@ -22,3 +22,8 @@ The url can be looked up from the url_lookup by docID, url_lookup is a dictionar
 ```
 docID: url
 ```
+\
+For example, the word `rop` has data structure like:
+```
+rop: 3 -> ID/freq: {13826: 2, 14537: 2, 17710: 1}, ID/pos: {13826: [50, 195], 14537: [19, 98], 17710: [54]}
+```
