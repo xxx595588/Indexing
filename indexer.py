@@ -6,7 +6,7 @@ import time
 import posting
 import sys
 from bs4 import BeautifulSoup
-
+from nltk import ngrams
 ori_loc = os.getcwd()
 
 # combine version of frequency and position
@@ -69,24 +69,38 @@ def tokenize(html_file):
             tbr.add(w)
 
     tokens_list = [w for w in tokens if w not in tbr]
+    ngramTokens = list(ngrams(tokens_list, 3))
+    for ngram in ngramTokens:
+        tokens_list.append(ngram)
 
     # dictionary of word/freq
     tokens_freq = dict()
     # dictionary of word/pos
     tokens_pos = dict()
-
     for i in range(len(tokens_list)):
         # count for the word's frequency
-        if tokens_list[i] in tokens_freq:
-            tokens_freq[tokens_list[i]] += 1
+        #print(type(tokens_list[i]))
+        
+        #temporary need to change this to include ngrams wiht token positions
+        if(type(tokens_list[i]) == tuple):
+           # print(tokens_list[i])
+            ngramString = " ".join(list(tokens_list[i]))
+            #sprint(ngramString)
+            if ngramString in tokens_freq:
+                tokens_freq[ngramString] += 1
+            else:
+                tokens_freq[ngramString] = 1
         else:
-            tokens_freq[tokens_list[i]] = 1
+            if tokens_list[i] in tokens_freq:
+                tokens_freq[tokens_list[i]] += 1
+            else:
+                tokens_freq[tokens_list[i]] = 1
 
-        # indicate the word's position -> word:[pos]
-        if tokens_list[i] in tokens_pos:
-            tokens_pos[tokens_list[i]].append(i+1)
-        else:
-            tokens_pos[tokens_list[i]] = [i+1]
+            # indicate the word's position -> word:[pos]
+            if tokens_list[i] in tokens_pos:
+                tokens_pos[tokens_list[i]].append(i+1)
+            else:
+                tokens_pos[tokens_list[i]] = [i+1]
 
     return tokens_freq, tokens_pos, raw_data["url"]
 
@@ -127,10 +141,11 @@ def fetch_data():
                         index_freq[w][url_map[url]] = tokens_freq[w]
 
                     # section for index position
-                    if index_pos.get(w) is None:
-                        index_pos[w] = dict()
+                    if(" " not in w):
+                        if index_pos.get(w) is None:
+                            index_pos[w] = dict()
 
-                    index_pos[w][url_map[url]] = tokens_pos[w]
+                        index_pos[w][url_map[url]] = tokens_pos[w]
                     
             else:
                 dup_doc += 1
@@ -152,7 +167,8 @@ def wrap_up():
         # update for the ID/freq dictionary
         new_posting.freq_add(index_freq[key_list[i]])
         # update for the ID/pos list
-        new_posting.pos_add(index_pos[key_list[i]])
+        if(" " not in key_list[i]):
+            new_posting.pos_add(index_pos[key_list[i]])
 
         final_index[word] = new_posting
 
@@ -195,8 +211,6 @@ def write_file():
         f.write(f"{i}: {url_map[i]}\n")
     f.close()
 
-    """
-
     # output the url lookup table
     # ID: url
     f = open("url_lookup.txt", "w")
@@ -204,7 +218,7 @@ def write_file():
         f.write(f"{i}: {url_lookup[i]}\n")
     f.close()
 
-
+    """
     # output the final index
     f = open("indexer.txt", "w")
     for i in final_index:
