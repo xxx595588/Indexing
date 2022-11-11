@@ -195,6 +195,8 @@ def write_file():
         f.write(f"{i}: {url_map[i]}\n")
     f.close()
 
+    """
+
     # output the url lookup table
     # ID: url
     f = open("url_lookup.txt", "w")
@@ -202,7 +204,7 @@ def write_file():
         f.write(f"{i}: {url_lookup[i]}\n")
     f.close()
 
-    """
+
     # output the final index
     f = open("indexer.txt", "w")
     for i in final_index:
