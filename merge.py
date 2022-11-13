@@ -128,6 +128,3 @@ def merge():
         # check if reach end of file for all files
         if cur_posting.count("eof") == len(files_to_read):
             break
-            
-
-merge()
