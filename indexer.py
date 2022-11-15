@@ -43,6 +43,9 @@ dup_doc = 0
 start_time = None
 end_time = None
 
+# Stemmer
+stemmer = nltk.stem.SnowballStemmer("english")
+
 # tokenize the content fetch from the json file
 def tokenize(html_file):
     global tag
@@ -59,7 +62,7 @@ def tokenize(html_file):
         temp_ter += "."
 
     tokens = nltk.word_tokenize(temp_ter)
-    tokens = [t.lower() for t in tokens]
+    tokens = [stemmer.stem(t.lower()) for t in tokens]
 
     # to be removed word set (number or special character)
     tbr = set()
@@ -224,6 +227,8 @@ def write_file():
     f.close()
 
 def main():
+    nltk.download('punkt') # nltk compained about not having 'punkt'
+    
     global start_time
     start_time = time.time()
 
