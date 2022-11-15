@@ -1,21 +1,56 @@
 import json
-query = input("Enter your query seperated by spaces: ")
-queries = query.split(" ")
-allPostings = []
 
+# find the intersection of given list
+def find_intersection(allPostings):
+    intersec = list()
 
-f = open("indexer3.txt", "r")
+    for i in range(1, len(allPostings)):
+        if len(intersec) == 0:
+            intersec = [id for id in allPostings[i] if id in allPostings[i-1]]
+        else:
+            intersec = [id for id in allPostings[i] if id in intersec]
 
-for line in f:
-    loaded = json.loads(line)
-    currToken = loaded["token"]
-    postings = eval(loaded["postings"])
-    if currToken in queries:
-        postingsList = list(postings.keys())
-        for posting in postingsList:
-            allPostings.append(posting)
-    #print(loaded["token"] + "->" + str(postings))
+    return intersec
 
-f.close()
+def search():
+    query = input("Enter your query seperated by spaces: ")
+    queries = query.split(" ")
 
-print(allPostings)
+    # list of query words' docID, use for finding intersection
+    allPostings = list()
+
+    # dictionary of id/freq, will be used in tf-idf calculation
+    id_freq_list = list()
+
+    # sort the query for better performance
+    queries = sorted(queries)
+
+    f = open("indexer2.txt", "r")
+
+    # only search for the word in query
+    for word in queries:
+        line = f.readline()
+        loaded = json.loads(line)
+        
+        # find the first matched word with queries
+        while loaded["token"] != word:
+            line = f.readline()
+
+            if line == "":
+                break
+
+            loaded = json.loads(line)
+
+        if line == "":
+            break
+        
+        # store the info
+        postings = eval(loaded["postings"])
+        id_freq_list.append(postings)
+        allPostings.append(postings.keys())
+
+    f.close()
+
+    intersec = find_intersection(allPostings)
+
+    # calculate the score...

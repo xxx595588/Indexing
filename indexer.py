@@ -13,7 +13,7 @@ ori_loc = os.getcwd()
 final_index = dict()
 
 # focuse on these tags for indexing
-tag = ["title", "p", "h1", "h2", "h3", "h4", "h5", "h6"]
+tag = ["title", "p", "h1", "h2", "h3", "h4", "h5", "h6", "b", "strong"]
 
 # map an id to url, the structure is {url: ID}
 url_map = dict()
@@ -65,7 +65,7 @@ def tokenize(html_file):
     tbr = set()
 
     for w in tokens:
-        if len(w) == 1 or re.search("[^a-z]", w):
+        if len(w) == 1 or re.search("[^a-z0-9]", w):
             tbr.add(w)
 
     tokens_list = [w for w in tokens if w not in tbr]
@@ -201,7 +201,7 @@ def write_file():
     # ID: url
     f = open("url_lookup.txt", "w")
     for i in url_lookup:
-        f.write(f"{i}: {url_lookup[i]}\n")
+        f.write(f"{{\"id\":\"{i}\", \"url\":\"{url_lookup[i]}\"}}\n")
     f.close()
 
 
