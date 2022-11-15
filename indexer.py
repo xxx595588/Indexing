@@ -206,13 +206,16 @@ def write_file():
 
 
     # output the final index
-    f = open("indexer.txt", "w")
+    f = open("indexer2.txt", "w")
     for i in final_index:
-        f.write(f"{i}: {len(final_index[i].get_freq())} -> ID/freq: {final_index[i].get_freq()}, ID/pos: {final_index[i].get_pos()}\n")
+        f.write(f"{{\"token\":\"{i}\", \"postings\":\"{final_index[i].get_freq()}\", \"positions\":\"{final_index[i].get_pos()}\"}}\n")
+
+        #f.write(f"{i}: {len(final_index[i].get_freq())} -> ID/freq: {final_index[i].get_freq()}, ID/pos: {final_index[i].get_pos()}\n")
+    
     f.close()
 
     # contain some general info for the indexing process
-    f = open("general_output.txt", "w")
+    f = open("general_output2.txt", "w")
     index_size = sys.getsizeof(final_index) / 1000
     elapsed_time = end_time - start_time
     f.write(f"Total number of documents: {total_doc}\n"
