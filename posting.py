@@ -9,7 +9,7 @@ class posting:
 
     def pos_add(self, pos_list):
         self.pos = pos_list
-        
+
     def get_word(self):
         return self.word
 

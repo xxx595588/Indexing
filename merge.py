@@ -1,23 +1,26 @@
 import os
 import posting
+import json
 
 ori_loc = os.getcwd()
 path = "index files"
-output_file = "new_indexer.txt"
+output_file = "merged_indexer.txt"
+pos_counter = 0
+alphabet_indicator = [-1]*27
+alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+
 
 def index_converter(raw_data):
     # convert raw_data into word: posting
-    word = raw_data.split("-> ")[0].split(":")[0]
-    raw_posting = raw_data.split("-> ")[1][:-1]
-
-    id_freq = eval(raw_posting.split(", ID/pos: ")[0][9:])
-    id_pos = eval(raw_posting.split(", ID/pos: ")[1])
+    loaded = json.loads(raw_data)
+    word = loaded["token"]
+    id_freq = eval(loaded["postings"])
+    id_pos = eval(loaded["positions"])
 
     return posting.posting(word, id_freq, id_pos)
 
 def merge():
-    
-    global ori_loc, path, output_file
+    global ori_loc, path, output_file, alphabet, alphabet_indicator, pos_counter
     
     if os.path.exists(output_file):
         os.remove(output_file)
@@ -28,8 +31,6 @@ def merge():
     files_to_read = os.listdir()
     file_reader = []
 
-    # remove for mac only, windows can ignore
-    files_to_read.remove(".DS_Store")
     files_to_read = sorted(files_to_read)
 
     # store the current posting of each file
@@ -57,9 +58,6 @@ def merge():
             word_list.append(post.get_word())
     
     while True:
-        if os.getcwd().split("/")[-1] != "index files":
-            os.chdir(path)
-        
         # obtain the nmuber of posting needs to be mergerd
         num_to_merge = word_list.count(min(word_list))
         
@@ -82,9 +80,15 @@ def merge():
             # write the signle posting to the disk
             os.chdir(ori_loc)
             f = open(output_file, "a")
-            f.write(f"{to_be_merged.get_word()}: {len(to_be_merged.get_freq())} -> ID/freq: {to_be_merged.get_freq()}, ID/pos: {to_be_merged.get_pos()}\n")
+            f.write(f"{{\"token\":\"{to_be_merged.get_word()}\", \"postings\":\"{to_be_merged.get_freq()}\", \"positions\":\"{to_be_merged.get_pos()}\"}}\n")
             f.close()
-            
+
+            start_char = to_be_merged.get_word()[0]
+
+            if alphabet_indicator[alphabet.index(start_char)] == -1:
+                alphabet_indicator[alphabet.index(start_char)] = pos_counter
+
+            pos_counter += 1
             
         else:
             # indicate which cur_posting are about to be merged as a list of indexs
@@ -119,12 +123,31 @@ def merge():
             new_id_pos = dict(sorted(new_id_pos.items(), key=lambda item: item[0]))
             
             os.chdir(ori_loc)
-            f = open("new_indexer.txt", "a")
-            f.write(f"{word}: {len(new_id_freq)} -> ID/freq: {new_id_freq}, ID/pos: {new_id_pos}\n")
+            f = open(output_file, "a")
+            f.write(f"{{\"token\":\"{word}\", \"postings\":\"{new_id_freq}\", \"positions\":\"{new_id_pos}\"}}\n")
             f.close()
+
+            start_char = word[0]
+
+            if alphabet_indicator[alphabet.index(start_char)] == -1:
+                alphabet_indicator[alphabet.index(start_char)] = pos_counter
+
+            pos_counter += 1
                 
             os.chdir(ori_loc)
-        
+                
         # check if reach end of file for all files
         if cur_posting.count("eof") == len(files_to_read):
             break
+
+        alphabet_indicator[26] = pos_counter
+
+        os.chdir(ori_loc)
+        f = open("indicator.txt", "w")
+        f.write("[")
+        temp = ""
+        for i in alphabet_indicator:
+            temp += (str(i) + ", ")
+        temp = temp[:-2]  
+        f.write(f"{temp}]\n")
+        f.close()
