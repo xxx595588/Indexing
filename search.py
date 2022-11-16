@@ -34,12 +34,15 @@ def binary_search(start, end, word, indexer_list, allPostings):
             postings = posting(word, eval(loaded["postings"]), eval(loaded["positions"]))
             indexer_list.append(postings)
             allPostings.append(postings.get_freq().keys())
+            return mid
         # search start to mid - 1
         elif word < loaded["token"]:
-            binary_search(start, mid - 1, word, indexer_list, allPostings)
+            return binary_search(start, mid - 1, word, indexer_list, allPostings)
         # search mid + 1 to end
         else:
-            binary_search(mid + 1, end, word, indexer_list, allPostings)
+            return binary_search(mid + 1, end, word, indexer_list, allPostings)
+    else:
+        return -1
         
     
 def search():
@@ -79,10 +82,33 @@ def search():
     
     start = time.time()
 
+    # partition word into 26 sublist
+    partition_word = [None]*26
+    for word in queries:
+        if partition_word[alphabet.index(word[0])] is None:
+            partition_word[alphabet.index(word[0])] = [word]
+        else:
+            partition_word[alphabet.index(word[0])].append(word)
+
+    for sublist in partition_word:
+        if sublist is not None:
+            mid = -1
+            for word in sublist:
+                if mid < 0:
+                    start_pos = indicator[alphabet.index(word[0])]
+                    end_pos = indicator[alphabet.index(word[0]) + 1] - 1
+                    mid = binary_search(start_pos, end_pos, word, indexer_list, allPostings)
+                else:
+                    start_pos = mid
+                    end_pos = indicator[alphabet.index(word[0]) + 1] - 1
+                    mid = binary_search(start_pos, end_pos, word, indexer_list, allPostings)
+                    
+    """
     for word in queries:
         start_pos = indicator[alphabet.index(word[0])]
         end_pos = indicator[alphabet.index(word[0]) + 1] - 1
         binary_search(start_pos, end_pos, word, indexer_list, allPostings)
+    """
 
     if len(allPostings) != 1:
         intersec = find_intersection(allPostings)
