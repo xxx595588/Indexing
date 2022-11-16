@@ -1,10 +1,11 @@
 import json
 import time
 import linecache
+import nltk
 from posting import posting
 from nltk import ngrams
 
-
+stemmer = nltk.stem.SnowballStemmer("english")
 alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 
 # find the intersection of given list
@@ -45,8 +46,11 @@ def search():
     query = input("Enter your query seperated by spaces: ")
     queries = query.split(" ")
 
+    queries = [stemmer.stem(w.lower()) for w in queries]
+
+
     # doing ngram
-    ngram_iteration = [2]
+    ngram_iteration = [2, 3]
     ngram_temp = list()
 
     for iter in ngram_iteration:
@@ -59,7 +63,6 @@ def search():
     for i in range(len(queries)):
         if(type(queries[i]) == tuple):
             queries[i] = " ".join(list(queries[i]))
-
 
     f = open("indicator.txt", "r")
     indicator = eval(f.readline()[:-1])
@@ -82,9 +85,6 @@ def search():
         f = open("merged_indexer.txt", "r")
         binary_search(f, start_pos, end_pos, word, indexer_list, allPostings)
         f.close()
- 
-    for i in indexer_list:
-        print(f"{i.get_word()}: id/freq is {i.get_freq()}")
 
     if len(allPostings) != 1:
         intersec = find_intersection(allPostings)
@@ -93,4 +93,21 @@ def search():
 
     end = time.time()
 
-    print(f"time is: {end-start} sec")
+    url_result_list = list()
+
+    print(intersec)
+
+    for id in intersec:
+        line = linecache.getline("url_lookup.txt", id)
+        loaded = json.loads(line)
+        url_result_list.append(loaded["url"])
+
+    if len(url_result_list) == 0:
+        print("No matched result was found.")
+    else:
+        for i in range(len(url_result_list)):
+            print(f"{i + 1}. {url_result_list[i]}")
+
+    print(f"search time is: {end-start} sec")
+
+search()
