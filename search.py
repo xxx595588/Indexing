@@ -50,7 +50,7 @@ def search():
 
 
     # doing ngram
-    ngram_iteration = [2, 3]
+    ngram_iteration = [2]
     ngram_temp = list()
 
     for iter in ngram_iteration:
