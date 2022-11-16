@@ -20,7 +20,7 @@ def find_intersection(allPostings):
 
     return intersec
 
-def binary_search(f, start, end, word, indexer_list, allPostings):
+def binary_search(start, end, word, indexer_list, allPostings):
 
     # valid conditioin
     if end >= start:
@@ -36,10 +36,10 @@ def binary_search(f, start, end, word, indexer_list, allPostings):
             allPostings.append(postings.get_freq().keys())
         # search start to mid - 1
         elif word < loaded["token"]:
-            binary_search(f, start, mid - 1, word, indexer_list, allPostings)
+            binary_search(start, mid - 1, word, indexer_list, allPostings)
         # search mid + 1 to end
         else:
-            binary_search(f, mid + 1, end, word, indexer_list, allPostings)
+            binary_search(mid + 1, end, word, indexer_list, allPostings)
         
     
 def search():
@@ -50,7 +50,7 @@ def search():
 
 
     # doing ngram
-    ngram_iteration = [2, 3]
+    ngram_iteration = [2]
     ngram_temp = list()
 
     for iter in ngram_iteration:
@@ -82,9 +82,7 @@ def search():
     for word in queries:
         start_pos = indicator[alphabet.index(word[0])]
         end_pos = indicator[alphabet.index(word[0]) + 1] - 1
-        f = open("merged_indexer.txt", "r")
-        binary_search(f, start_pos, end_pos, word, indexer_list, allPostings)
-        f.close()
+        binary_search(start_pos, end_pos, word, indexer_list, allPostings)
 
     if len(allPostings) != 1:
         intersec = find_intersection(allPostings)
