@@ -20,7 +20,7 @@ def find_intersection(allPostings):
 
     return intersec
 
-def binary_search(start, end, word, indexer_list, allPostings):
+def binary_search(mid_list, start, end, word, indexer_list, allPostings):
 
     # valid conditioin
     if end >= start:
@@ -29,28 +29,29 @@ def binary_search(start, end, word, indexer_list, allPostings):
         line = linecache.getline("merged_indexer.txt", mid)
         loaded = json.loads(line)
 
+        mid_list.append(mid)
+
         # compare with mid
         if word == loaded["token"]:
             postings = posting(word, eval(loaded["postings"]), eval(loaded["positions"]))
             indexer_list.append(postings)
             allPostings.append(postings.get_freq().keys())
-            return mid
+            return mid_list
         # search start to mid - 1
         elif word < loaded["token"]:
-            return binary_search(start, mid - 1, word, indexer_list, allPostings)
+            return binary_search(mid_list, start, mid - 1, word, indexer_list, allPostings)
         # search mid + 1 to end
         else:
-            return binary_search(mid + 1, end, word, indexer_list, allPostings)
+            return binary_search(mid_list, mid + 1, end, word, indexer_list, allPostings)
     else:
-        return -1
+        return list()
         
     
 def search():
     query = input("Enter your query seperated by spaces: ")
-    queries = query.split(" ")
+    queries = nltk.word_tokenize(query)
 
     queries = [stemmer.stem(w.lower()) for w in queries]
-
 
     # doing ngram
     ngram_iteration = [2]
@@ -82,7 +83,7 @@ def search():
     
     start = time.time()
 
-    # partition word into 26 sublist
+    # partition word into 26 sublist by starting alphabet
     partition_word = [None]*26
     for word in queries:
         if partition_word[alphabet.index(word[0])] is None:
@@ -92,34 +93,46 @@ def search():
 
     for sublist in partition_word:
         if sublist is not None:
-            mid = -1
+            #print(sublist)
+            counter = 0
+            # collect all mid value to help following search in same sublist
+            mid_list = list()
             for word in sublist:
-                if mid < 0:
-                    start_pos = indicator[alphabet.index(word[0])]
-                    end_pos = indicator[alphabet.index(word[0]) + 1] - 1
-                    mid = binary_search(start_pos, end_pos, word, indexer_list, allPostings)
-                else:
-                    start_pos = mid
-                    end_pos = indicator[alphabet.index(word[0]) + 1] - 1
-                    mid = binary_search(start_pos, end_pos, word, indexer_list, allPostings)
-                    
-    """
-    for word in queries:
-        start_pos = indicator[alphabet.index(word[0])]
-        end_pos = indicator[alphabet.index(word[0]) + 1] - 1
-        binary_search(start_pos, end_pos, word, indexer_list, allPostings)
-    """
+                # original start and end position
+                start_pos = indicator[alphabet.index(word[0])]
+                end_pos = indicator[alphabet.index(word[0]) + 1] - 1
+                #print(f"original start is {start_pos}, end is {end_pos}")
 
+                if counter == 0:
+                    mid_list = binary_search(mid_list, start_pos, end_pos, word, indexer_list, allPostings)
+                    counter += 1
+                else:
+                    #print(f"now is {word}")
+                    for pos in mid_list:
+                        line = linecache.getline("merged_indexer.txt", pos)
+                        loaded = json.loads(line)
+
+                        if word < loaded["token"]:
+                            if pos < end_pos:
+                                end_pos = pos
+                                #print(f"changing end to {pos}")
+                        
+                        if word > loaded["token"]:
+                            if pos > start_pos:
+                                start_pos = pos
+                                #print(f"changing start to {pos}")
+
+                    #print(f"new start is {start_pos}, end is {end_pos}")
+                    mid_list = binary_search(mid_list, start_pos, end_pos, word, indexer_list, allPostings)
+    
     if len(allPostings) != 1:
         intersec = find_intersection(allPostings)
     else:
         intersec = list(allPostings[0])
 
-    end = time.time()
+    end = time.time()  
 
     url_result_list = list()
-
-    print(intersec)
 
     for id in intersec:
         line = linecache.getline("url_lookup.txt", id)

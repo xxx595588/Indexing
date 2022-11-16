@@ -19,7 +19,7 @@ acc_url_counter = 1
 final_index = dict()
 
 # focuse on these tags for indexing
-tag = ["title", "p", "h1", "h2", "h3", "h4", "h5", "h6", "b", "strong"]
+tag = ["title", "h1", "h2", "h3", "h4", "h5", "h6", "b", "strong"]
 
 # map an id to url, the structure is {url: ID}
 url_map = dict()
