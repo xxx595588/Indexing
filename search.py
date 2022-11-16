@@ -54,7 +54,7 @@ def search():
     queries = [stemmer.stem(w.lower()) for w in queries]
 
     # doing ngram
-    ngram_iteration = [2]
+    ngram_iteration = [2, 3]
     ngram_temp = list()
 
     for iter in ngram_iteration:

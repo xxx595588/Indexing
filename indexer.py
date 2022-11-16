@@ -77,7 +77,7 @@ def tokenize(html_file):
             tbr.add(w)
 
     tokens_list = [w for w in tokens if w not in tbr]
-    ngram_iteration = [2]
+    ngram_iteration = [2, 3]
     ngram_temp = list()
 
     for iter in ngram_iteration:
