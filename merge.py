@@ -1,27 +1,30 @@
 import os
-import posting
+from posting import posting
 import json
 
 ori_loc = os.getcwd()
 path = "index files"
 output_file = "merged_indexer.txt"
 pos_counter = 0
+
+# used to indicate the staring position of each alphabet in the file
 alphabet_indicator = [-1]*27
 alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 
 
 def index_converter(raw_data):
-    # convert raw_data into word: posting
+    # convert raw_data into posting
     loaded = json.loads(raw_data)
     word = loaded["token"]
     id_freq = eval(loaded["postings"])
     id_pos = eval(loaded["positions"])
 
-    return posting.posting(word, id_freq, id_pos)
+    return posting(word, id_freq, id_pos)
 
 def merge():
     global ori_loc, path, output_file, alphabet, alphabet_indicator, pos_counter
     
+    # remove previous indexer file
     if os.path.exists(output_file):
         os.remove(output_file)
     
@@ -30,7 +33,6 @@ def merge():
     # list of index file to be merged
     files_to_read = os.listdir()
     file_reader = []
-
     files_to_read = sorted(files_to_read)
 
     # store the current posting of each file
@@ -85,6 +87,7 @@ def merge():
 
             start_char = to_be_merged.get_word()[0]
 
+            # locate tje first position of that alphabet
             if alphabet_indicator[alphabet.index(start_char)] == -1:
                 alphabet_indicator[alphabet.index(start_char)] = pos_counter
 
@@ -129,6 +132,7 @@ def merge():
 
             start_char = word[0]
 
+            # locate tje first position of that alphabet
             if alphabet_indicator[alphabet.index(start_char)] == -1:
                 alphabet_indicator[alphabet.index(start_char)] = pos_counter
 
@@ -142,6 +146,7 @@ def merge():
 
         alphabet_indicator[26] = pos_counter
 
+        # write the indicator.txt file
         os.chdir(ori_loc)
         f = open("indicator.txt", "w")
         f.write("[")
