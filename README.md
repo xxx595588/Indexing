@@ -1,4 +1,4 @@
-# Indexing
+# Search-Engine-Group-10
 
 The indexer.py will read all given json files to create the inverted index.
 The structure of the index is a dictionary whose key is word and value is posting.
