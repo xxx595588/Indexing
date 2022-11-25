@@ -259,14 +259,11 @@ def general_output():
 
     # contain some general info for the indexing process
     f = open("general_output.txt", "w")
-    index_size = sys.getsizeof(final_index) / 1000
     elapsed_time = end_time - start_time
     f.write(f"Total number of documents: {total_doc}\n"
                 + f"Number of indexed documents: {indexed_doc}\n"
                 + f"Number of duplicated documents: {dup_doc}\n"
-                + f"Total runtime: {elapsed_time} seconds\n"
-                + f"Number of unique tokens: {len(final_index)}\n"
-                + f"Total size of index: {index_size}KB")
+                + f"Total runtime: {elapsed_time} seconds\n")
     f.close()
 
     # output the url lookup table

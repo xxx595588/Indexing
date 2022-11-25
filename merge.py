@@ -8,7 +8,7 @@ output_file = "merged_indexer.txt"
 pos_counter = 0
 alphabet_indicator = [-1]*27
 alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
-
+unique_token = 0
 
 def index_converter(raw_data):
     # convert raw_data into word: posting
@@ -20,7 +20,7 @@ def index_converter(raw_data):
     return posting.posting(word, id_freq, id_pos)
 
 def merge():
-    global ori_loc, path, output_file, alphabet, alphabet_indicator, pos_counter
+    global ori_loc, path, output_file, alphabet, alphabet_indicator, pos_counter, unique_token
     
     if os.path.exists(output_file):
         os.remove(output_file)
@@ -135,6 +135,8 @@ def merge():
             pos_counter += 1
                 
             os.chdir(ori_loc)
+
+        unique_token += 1
                 
         # check if reach end of file for all files
         if cur_posting.count("eof") == len(files_to_read):
@@ -151,3 +153,9 @@ def merge():
         temp = temp[:-2]  
         f.write(f"{temp}]\n")
         f.close()
+
+    f = open("general_output.txt", "a")
+    index_file_size = os.path.getsize(output_file) / 1000
+    f.write(f"Number of unique tokens: {unique_token}\n"
+            + f"Total size of index: {index_file_size}KB")
+    f.close()

@@ -2,6 +2,7 @@ import json
 import time
 import linecache
 import nltk
+import math
 from posting import posting
 from nltk import ngrams
 
@@ -45,7 +46,50 @@ def binary_search(mid_list, start, end, word, indexer_list, allPostings):
             return binary_search(mid_list, mid + 1, end, word, indexer_list, allPostings)
     else:
         return list()
-        
+
+# calculate the tf-idf for query
+def tf_idf_query(raw_query, queries, indexer_list):
+    line = linecache.getline("general_output.txt", 2)
+    num_indexed_doc = int(line.split(":")[-1])
+
+    # get the tf-idf for query
+    tf_query = list()
+    idf_query = list()
+    found_terms = list()
+    found_term_freq = list()
+
+    for posting in indexer_list:
+        found_terms.append(posting.get_word())
+        found_term_freq.append(posting.get_freq())
+
+    for term in queries:
+        if term not in found_terms:
+            tf_query.append(0)
+            idf_query.append(0)
+        else:
+            index = found_terms.index(term)
+            tf_query.append(1 + math.log(raw_query.count(term), 10))
+            idf_query.append(math.log(num_indexed_doc/len(found_term_freq[index]), 10))
+
+    tf_idf_query = list()
+    length_query = 0
+
+    # calculate tf_idf without normalization
+    for i in range(len(tf_query)):
+        tf_idf_query.append(tf_query[i] * idf_query[i])
+        length_query += tf_idf_query[i]**2
+
+    length_query = math.sqrt(length_query)
+
+    for i in range(len(tf_query)):
+        tf_idf_query[i] = tf_idf_query[i]/length_query
+
+    return tf_idf_query
+
+
+def ranking(raw_query, queries, indexer_list):
+    tf_idf_q = tf_idf_query(raw_query, queries, indexer_list)
+
     
 def search():
     query = input("Enter your query seperated by spaces: ")
@@ -71,10 +115,10 @@ def search():
     f = open("indicator.txt", "r")
     indicator = eval(f.readline()[:-1])
 
-    # list of query words' docID, use for finding intersection
+    # list of query words' docID, used for finding intersection
     allPostings = list()
 
-    # dictionary of id/freq, will be used in tf-idf calculation
+    # dictionary of posting, will be used in tf-idf calculation
     indexer_list = list()
 
     # sort the query for better performance
@@ -130,10 +174,20 @@ def search():
     else:
         intersec = list(allPostings[0])
 
+    result_size = len(intersec)
+
+
+    ranking(query, queries, indexer_list)
+
+    # get top 5 results
+    if result_size > 5:
+        intersec = intersec[:5]
+
     end = time.time()  
 
     url_result_list = list()
 
+    # look up the url
     for id in intersec:
         line = linecache.getline("url_lookup.txt", id)
         loaded = json.loads(line)
@@ -145,6 +199,7 @@ def search():
         for i in range(len(url_result_list)):
             print(f"{i + 1}. {url_result_list[i]}")
 
-    print(f"search time is: {end-start} sec")
+    print(f"\n{result_size} results ({end-start} seconds)")
+    print(f"-----------------------------end of search-----------------------------")
 
 search()
