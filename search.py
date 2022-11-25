@@ -8,6 +8,7 @@ from nltk import ngrams
 
 stemmer = nltk.stem.SnowballStemmer("english")
 alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+ngram_iteration = [2, 3]
 
 # find the intersection of given list
 def find_intersection(allPostings):
@@ -21,18 +22,20 @@ def find_intersection(allPostings):
 
     return intersec
 
+# implement binary search to find the target word in the file
 def binary_search(mid_list, start, end, word, indexer_list, allPostings):
 
-    # valid conditioin
+    # valid conditioin for binary search
     if end >= start:
         mid = (start + end) // 2
 
+        # get the mid-th word in the file
         line = linecache.getline("merged_indexer.txt", mid)
         loaded = json.loads(line)
 
         mid_list.append(mid)
 
-        # compare with mid
+        # compare word with mid-th word
         if word == loaded["token"]:
             postings = posting(word, eval(loaded["postings"]), eval(loaded["positions"]))
             indexer_list.append(postings)
@@ -44,6 +47,7 @@ def binary_search(mid_list, start, end, word, indexer_list, allPostings):
         # search mid + 1 to end
         else:
             return binary_search(mid_list, mid + 1, end, word, indexer_list, allPostings)
+    # word isn't present in the file
     else:
         return list()
 
@@ -94,11 +98,10 @@ def ranking(raw_query, queries, indexer_list):
 def search():
     query = input("Enter your query seperated by spaces: ")
     queries = nltk.word_tokenize(query)
-
     queries = [stemmer.stem(w.lower()) for w in queries]
 
     # doing ngram
-    ngram_iteration = [2, 3]
+    global ngram_iteration
     ngram_temp = list()
 
     for iter in ngram_iteration:
@@ -112,6 +115,7 @@ def search():
         if(type(queries[i]) == tuple):
             queries[i] = " ".join(list(queries[i]))
 
+    # open indicator.txt file which can boost the binary search speed
     f = open("indicator.txt", "r")
     indicator = eval(f.readline()[:-1])
 
@@ -127,7 +131,7 @@ def search():
     
     start = time.time()
 
-    # partition word into 26 sublist by starting alphabet
+    # partition query's word into 26 sublist by their starting alphabet
     partition_word = [None]*26
     for word in queries:
         if partition_word[alphabet.index(word[0])] is None:
@@ -137,21 +141,19 @@ def search():
 
     for sublist in partition_word:
         if sublist is not None:
-            #print(sublist)
-            counter = 0
-            # collect all mid value to help following search in same sublist
+            first_time = True
+            # collect all mid value to help following search in the same sublist
             mid_list = list()
             for word in sublist:
-                # original start and end position
+                # original start and end position for corresponding alphabet
                 start_pos = indicator[alphabet.index(word[0])]
                 end_pos = indicator[alphabet.index(word[0]) + 1] - 1
-                #print(f"original start is {start_pos}, end is {end_pos}")
 
-                if counter == 0:
+                if first_time:
                     mid_list = binary_search(mid_list, start_pos, end_pos, word, indexer_list, allPostings)
-                    counter += 1
+                    first_time = False
                 else:
-                    #print(f"now is {word}")
+                    # check with mid_list to trim the search range
                     for pos in mid_list:
                         line = linecache.getline("merged_indexer.txt", pos)
                         loaded = json.loads(line)
@@ -159,14 +161,11 @@ def search():
                         if word < loaded["token"]:
                             if pos < end_pos:
                                 end_pos = pos
-                                #print(f"changing end to {pos}")
                         
                         if word > loaded["token"]:
                             if pos > start_pos:
                                 start_pos = pos
-                                #print(f"changing start to {pos}")
 
-                    #print(f"new start is {start_pos}, end is {end_pos}")
                     mid_list = binary_search(mid_list, start_pos, end_pos, word, indexer_list, allPostings)
     
     if len(allPostings) != 1:
