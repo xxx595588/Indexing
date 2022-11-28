@@ -47,7 +47,6 @@ def tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc):
     idf_query = list()
     found_terms = list()
     found_term_freq = list()
-
     raw_query = nltk.word_tokenize(raw_query)
 
     raw_query = [stemmer.stem(t.lower()) for t in raw_query]
@@ -68,7 +67,6 @@ def tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc):
 
     tf_idf_query = list()
     length_query = 0
-
     # calculate tf_idf without normalization
     for i in range(len(tf_query)):
         tf_idf_query.append(tf_query[i] * idf_query[i])
@@ -77,7 +75,10 @@ def tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc):
     length_query = math.sqrt(length_query)
 
     for i in range(len(tf_query)):
-        tf_idf_query[i] = tf_idf_query[i]/length_query
+        # to prevent divide by zero error when searching for query that has no results
+        # ex: gibberish
+        if length_query != 0:     
+            tf_idf_query[i] = tf_idf_query[i]/length_query
 
     return tf_idf_query
 
@@ -165,7 +166,6 @@ def search():
     for i in range(len(queries)):
         if(type(queries[i]) == tuple):
             queries[i] = " ".join(list(queries[i]))
-
     # open indicator.txt file which can boost the binary search speed
     f = open("indicator.txt", "r")
     indicator = eval(f.readline()[:-1])
@@ -179,7 +179,6 @@ def search():
     # sort the query for better performance
     queries = sorted(queries)
     global alphabet
-    
     start = time.time()
 
     # partition query's word into 26 sublist by their starting alphabet
@@ -237,7 +236,8 @@ def search():
         for i in range(len(url_result_list)):
             print(f"{i + 1}. {url_result_list[i]}")
 
-    print(f"\n{len(top_five)} results ({end-start} seconds)")
+    print(f"\n{len(top_five)} results ({(end-start) * 1000} milliseconds)")
     print(f"-----------------------------end of search-----------------------------")
 
-search()
+while True:
+    search()
