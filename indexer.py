@@ -11,7 +11,6 @@ from bs4 import BeautifulSoup
 from nltk import ngrams
 ori_loc = os.getcwd()
 
-
 file_counter = 1
 acc_url_counter = 1
 
@@ -19,7 +18,7 @@ acc_url_counter = 1
 final_index = dict()
 
 # focuse on these tags for indexing
-tag = ["title", "p", "h1", "h2", "h3", "h4", "h5", "h6", "b", "strong"]
+tag = ["title", "h1", "h2", "h3", "h4", "h5", "h6", "b", "strong"]
 
 # map an id to url, the structure is {url: ID}
 url_map = dict()
@@ -259,14 +258,11 @@ def general_output():
 
     # contain some general info for the indexing process
     f = open("general_output.txt", "w")
-    index_size = sys.getsizeof(final_index) / 1000
     elapsed_time = end_time - start_time
     f.write(f"Total number of documents: {total_doc}\n"
                 + f"Number of indexed documents: {indexed_doc}\n"
                 + f"Number of duplicated documents: {dup_doc}\n"
-                + f"Total runtime: {elapsed_time} seconds\n"
-                + f"Number of unique tokens: {len(final_index)}\n"
-                + f"Total size of index: {index_size}KB")
+                + f"Total runtime: {elapsed_time} seconds\n")
     f.close()
 
     # output the url lookup table
@@ -277,6 +273,20 @@ def general_output():
         #f.write(f"{i}: {url_lookup[i]}\n")
     f.close()
 
+def export_remain():
+    global file_counter, index_freq
+
+    if len(index_freq) != 0:
+        wrap_up()
+        write_file(file_counter)
+
+    # output the url lookup table
+    # ID: url
+    f = open("url_lookup.txt", "w")
+    for i in url_lookup:
+        f.write(f"{{\"id\":\"{i}\", \"url\":\"{url_lookup[i]}\"}}\n")
+        #f.write(f"{i}: {url_lookup[i]}\n")
+    f.close()
 
 def export_remain():
     global file_counter, index_freq
@@ -285,15 +295,12 @@ def export_remain():
         wrap_up()
         write_file(file_counter)
 
-
 def main():
     global start_time
     start_time = time.time()
 
     fetch_data()
-
     export_remain()
-
 
     global end_time
     end_time = time.time()
