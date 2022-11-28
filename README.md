@@ -1,5 +1,7 @@
 # Search-Engine-Group-10
 
+## - Indexing
+
 The indexer.py will read all given json files to create the inverted index.
 The structure of the index is a dictionary whose key is word and value is posting.
 ```
@@ -27,3 +29,9 @@ For example, the word `rop` has data structure like:
 ```
 rop: 3 -> ID/freq: {13826: 2, 14537: 2, 17710: 1}, ID/pos: {13826: [50, 195], 14537: [19, 98], 17710: [54]}
 ```
+
+\
+According to the considerable data collection, the program will store the indexing files to `index files` folder when it reachs certain size.
+Finally, all partial indexing files will be merged into one file called `merged_indexer`, please reference to `merge.py`.
+\
+
