@@ -33,5 +33,5 @@ rop: 3 -> ID/freq: {13826: 2, 14537: 2, 17710: 1}, ID/pos: {13826: [50, 195], 14
 \
 According to the considerable data collection, the program will store the indexing files to `index files` folder when it reachs certain size.
 Finally, all partial indexing files will be merged into one file called `merged_indexer`, please reference to `merge.py`.
-\
+
 
