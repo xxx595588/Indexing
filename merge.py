@@ -8,8 +8,8 @@ output_file = "merged_indexer.txt"
 pos_counter = 0
 
 # used to indicate the staring position of each alphabet in the file
-alphabet_indicator = [-1]*27
-alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+alphabet_indicator = [-1]*37
+alphabet = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 unique_token = 0
 
 def index_converter(raw_data):
@@ -132,7 +132,7 @@ def merge():
 
             start_char = word[0]
 
-            # locate tje first position of that alphabet
+            # locate the first position of that alphabet
             if alphabet_indicator[alphabet.index(start_char)] == -1:
                 alphabet_indicator[alphabet.index(start_char)] = pos_counter
 
@@ -146,7 +146,7 @@ def merge():
         if cur_posting.count("eof") == len(files_to_read):
             break
 
-        alphabet_indicator[26] = pos_counter
+        alphabet_indicator[36] = pos_counter
 
         # write the indicator.txt file
         os.chdir(ori_loc)
@@ -164,3 +164,5 @@ def merge():
     f.write(f"Number of unique tokens: {unique_token}\n"
             + f"Total size of index: {index_file_size}KB")
     f.close()
+
+merge()

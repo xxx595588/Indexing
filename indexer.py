@@ -72,7 +72,7 @@ def tokenize(html_file):
     tbr = set()
 
     for w in tokens:
-        if len(w) == 1 or re.search("[^a-z]", w):
+        if len(w) == 1 or re.search("[^a-z0-9]", w):
             tbr.add(w)
 
     tokens_list = [w for w in tokens if w not in tbr]

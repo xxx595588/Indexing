@@ -3,12 +3,13 @@ import time
 import linecache
 import nltk
 import math
+import re
 from posting import posting
 from doc_tfidf import doc_tfidf
 from nltk import ngrams
 
 stemmer = nltk.stem.SnowballStemmer("english")
-alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+alphabet = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 ngram_iteration = [2, 3]
 
 # implement binary search to find the target word in the file
@@ -143,6 +144,8 @@ def ranking(raw_query, queries, indexer_list):
         if len(top_five) > 5:
             top_five.popitem()
 
+    print(top_five)
+
     return list(top_five.keys())
 
 
@@ -150,7 +153,17 @@ def search():
     query = input("Enter your query seperated by spaces: ")
     queries = nltk.word_tokenize(query)
     queries = [stemmer.stem(w.lower()) for w in queries]
+
+    tbr = list()
+
+    for w in queries:
+        if len(w) == 1 or re.search("[^a-z0-9]", w):
+            tbr.append(w)
     
+    for w in tbr:
+        queries.remove(w)
+    
+    print(queries)
 
     # doing ngram
     global ngram_iteration
@@ -182,7 +195,7 @@ def search():
     start = time.time()
 
     # partition query's word into 26 sublist by their starting alphabet
-    partition_word = [None]*26
+    partition_word = [None]*37
     for word in queries:
         if partition_word[alphabet.index(word[0])] is None:
             partition_word[alphabet.index(word[0])] = [word]
