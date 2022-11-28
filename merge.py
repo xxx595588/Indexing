@@ -164,5 +164,3 @@ def merge():
     f.write(f"Number of unique tokens: {unique_token}\n"
             + f"Total size of index: {index_file_size}KB")
     f.close()
-
-merge()

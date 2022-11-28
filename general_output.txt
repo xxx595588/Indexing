@@ -1,6 +1,6 @@
 Total number of documents: 55393
-Number of indexed documents: 23738
-Number of duplicated documents: 31655
-Total runtime: 1281.940786600113 seconds
+Number of indexed documents: 26914
+Number of duplicated documents: 28479
+Total runtime: 1094.4634160995483 seconds
 Number of unique tokens: 346857
 Total size of index: 35355.545KB

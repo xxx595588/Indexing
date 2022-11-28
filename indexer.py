@@ -134,6 +134,7 @@ def fetch_data():
     for web_folder in os.listdir():
         os.chdir(web_folder)
         for html_file in os.listdir():
+
             # words with frequency in dict -> words: freq
             tokens_freq, tokens_pos, url = tokenize(html_file)
 
@@ -148,6 +149,8 @@ def fetch_data():
             if hash_num not in dup:
                 indexed_doc += 1
                 dup.add(hash_num)
+
+                print(f"{acc_url_counter}: {url}")
                 url_map[url] = acc_url_counter
                 acc_url_counter += 1
 
@@ -279,7 +282,7 @@ def export_remain():
     if len(index_freq) != 0:
         wrap_up()
         write_file(file_counter)
-
+    '''
     # output the url lookup table
     # ID: url
     f = open("url_lookup.txt", "w")
@@ -287,13 +290,7 @@ def export_remain():
         f.write(f"{{\"id\":\"{i}\", \"url\":\"{url_lookup[i]}\"}}\n")
         #f.write(f"{i}: {url_lookup[i]}\n")
     f.close()
-
-def export_remain():
-    global file_counter, index_freq
-
-    if len(index_freq) != 0:
-        wrap_up()
-        write_file(file_counter)
+    '''
 
 def main():
     global start_time
@@ -306,8 +303,9 @@ def main():
     end_time = time.time()
 
     os.chdir(ori_loc)
-    merge()
     general_output()
+    merge()
+    
 
 if __name__ == "__main__":
     main()

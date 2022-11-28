@@ -83,7 +83,7 @@ def tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc):
 
     return tf_idf_query
 
-def tf_idf_documents(queries, indexer_list, num_indexed_doc):
+def tf_idf_documents(queries, indexer_list):
     doc_union = set()
     word_list = list()
 
@@ -95,9 +95,8 @@ def tf_idf_documents(queries, indexer_list, num_indexed_doc):
                 doc_union.add(id)
     
     doc_union = sorted(list(doc_union))
-
     doc_list = list()
-    
+
     # calculate the tf for each document
     for id in doc_union:
         doc_item = doc_tfidf(id, queries)
@@ -127,7 +126,7 @@ def ranking(raw_query, queries, indexer_list):
     num_indexed_doc = int(line.split(":")[-1])
 
     tf_idf_q = tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc)
-    tf_idf_d = tf_idf_documents(queries, indexer_list, num_indexed_doc)
+    tf_idf_d = tf_idf_documents(queries, indexer_list)
     top_five = dict()
 
     for doc_item in tf_idf_d:
@@ -144,7 +143,7 @@ def ranking(raw_query, queries, indexer_list):
         if len(top_five) > 5:
             top_five.popitem()
 
-    print(top_five)
+    #print(top_five)
 
     return list(top_five.keys())
 
@@ -163,7 +162,7 @@ def search():
     for w in tbr:
         queries.remove(w)
     
-    print(queries)
+    #print(queries)
 
     # doing ngram
     global ngram_iteration
@@ -232,6 +231,7 @@ def search():
                     mid_list = binary_search(mid_list, start_pos, end_pos, word, indexer_list, allPostings)
 
     top_five = ranking(query, queries, indexer_list)
+
 
     end = time.time()  
 
