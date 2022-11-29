@@ -17,6 +17,7 @@ acc_url_counter = 1
 
 # combine version of frequency and position
 final_index = dict()
+final_important_index = dict()
 
 # focuse on these tags for indexing
 tag = ["title", "p", "h1", "h2", "h3", "h4", "h5", "h6", "b", "strong"]
@@ -29,9 +30,11 @@ url_lookup = dict()
 
 # The structure of the index_freq is {word: {ID: freq}}, key is a string and value is a dictionary
 index_freq = dict()
+important_index_freq = dict()
 
 # The structure of the index_pos is {word: [(ID, pos)]}, key is a string and value is a list of tuple
 index_pos = dict()
+important_index_pos = dict()
 
 # Set contain indexed document to avoid same content
 dup = set()
@@ -51,22 +54,9 @@ end_time = None
 
 stemmer = nltk.stem.SnowballStemmer("english")
 
-# tokenize the content fetch from the json file
-def tokenize(html_file):
-    global tag
 
-    raw_data = json.load(open(html_file))
-    # get the content
-    soup = BeautifulSoup(raw_data["content"], features = "html.parser")
-    tag_list = soup.find_all(tag, text=True)
-
-    temp_ter = ""
-
-    for s in tag_list:
-        temp_ter += s.text
-        temp_ter += "."
-
-    tokens = nltk.word_tokenize(temp_ter)
+def create_token_dicts(token_string):
+    tokens = nltk.word_tokenize(token_string)
     tokens = [stemmer.stem(t.lower()) for t in tokens]
 
     # to be removed word set (number or special character)
@@ -89,6 +79,7 @@ def tokenize(html_file):
 
     # dictionary of word/freq
     tokens_freq = dict()
+    
     # dictionary of word/pos
     tokens_pos = dict()
     for i in range(len(tokens_list)):
@@ -97,7 +88,7 @@ def tokenize(html_file):
         
         #temporary need to change this to include ngrams wiht token positions
         if(type(tokens_list[i]) == tuple):
-           # print(tokens_list[i])
+            # print(tokens_list[i])
             ngramString = " ".join(list(tokens_list[i]))
             #sprint(ngramString)
             if ngramString in tokens_freq:
@@ -115,8 +106,37 @@ def tokenize(html_file):
                 tokens_pos[tokens_list[i]].append(i+1)
             else:
                 tokens_pos[tokens_list[i]] = [i+1]
+    
+    return tokens_freq, tokens_pos
 
-    return tokens_freq, tokens_pos, raw_data["url"]
+
+# tokenize the content fetch from the json file
+def tokenize(html_file):
+    global tag
+
+    raw_data = json.load(open(html_file))
+    # get the content
+    soup = BeautifulSoup(raw_data["content"], features = "html.parser")
+    tag_list = soup.find_all(tag, text=True)
+
+    temp_ter = ""
+    important_words = ""
+
+    important_tags = ["title", "h1", "h2", "h3", "strong"]
+    for t in tag_list:
+        if t.name in important_tags:
+            # add to important index
+            important_words += t.text
+            important_words += "."
+        else:
+            # add to main index
+            temp_ter += t.text
+            temp_ter += "."
+    
+    main_tokens_freq, main_tokens_pos = create_token_dicts(temp_ter)
+    important_tokens_freq, important_tokens_pos = create_token_dicts(important_words)
+
+    return main_tokens_freq, main_tokens_pos, important_tokens_freq, important_tokens_pos, raw_data["url"]
 
 # fetch all json file and tokenize the text from its content
 def fetch_data():
@@ -130,21 +150,23 @@ def fetch_data():
     path = input("Input the path: ")
     os.chdir(path)
 
-    global index_freq, index_pos, total_doc, indexed_doc, dup_doc, acc_url_counter, file_counter
+    global index_freq, index_pos, important_index_freq, important_index_pos, total_doc, indexed_doc, dup_doc, acc_url_counter, file_counter
 
     for web_folder in os.listdir():
         os.chdir(web_folder)
         for html_file in os.listdir():
             # words with frequency in dict -> words: freq
-            tokens_freq, tokens_pos, url = tokenize(html_file)
+            main_tokens_freq, main_tokens_pos, important_tokens_freq, important_tokens_pos, url = tokenize(html_file)
 
             print(f"Processing {url}")
 
-            # set of tokens without repeating
-            tokens = tokens_freq.keys()
-            hash_num = hash(frozenset(set(tokens)))
-
             total_doc += 1
+
+            # set of tokens without repeating
+            main_tokens = main_tokens_freq.keys()
+            important_tokens = important_tokens_freq.keys()
+            all_tokens = set(main_tokens).union(set(important_tokens))
+            hash_num = hash(frozenset(all_tokens))
 
             if hash_num not in dup:
                 indexed_doc += 1
@@ -152,25 +174,51 @@ def fetch_data():
                 url_map[url] = acc_url_counter
                 acc_url_counter += 1
 
-                for w in tokens:
+                # MAIN INDEX
+                for w in main_tokens:
                     # section for index frequency
                     if index_freq.get(w) is None:
                         new_dict = dict()
-                        new_dict[url_map[url]] = tokens_freq[w]
+                        new_dict[url_map[url]] = main_tokens_freq[w]
                         index_freq[w] = new_dict
                     else:
-                        index_freq[w][url_map[url]] = tokens_freq[w]
+                        index_freq[w][url_map[url]] = main_tokens_freq[w]
 
                     # section for index position
                     if(" " not in w):
                         if index_pos.get(w) is None:
                             index_pos[w] = dict()
 
-                        index_pos[w][url_map[url]] = tokens_pos[w]
+                        index_pos[w][url_map[url]] = main_tokens_pos[w]
 
                 # store the current indexs to file
                 if sys.getsizeof(index_freq) > 700000:
                     wrap_up()
+                    write_file(file_counter)
+                    file_counter += 1
+                    os.chdir(ori_loc + "/" + path + "/" + web_folder)
+
+                # IMPORTANT WORDS INDEX
+                for w in important_tokens:
+                    # section for index frequency
+                    if important_index_freq.get(w) is None:
+                        new_dict = dict()
+                        new_dict[url_map[url]] = important_tokens_freq[w]
+                        important_index_freq[w] = new_dict
+                    else:
+                        important_index_freq[w][url_map[url]] = important_tokens_freq[w] 
+                    
+                    # section for index position
+                    if(" " not in w):
+                        if important_index_pos.get(w) is None:
+                            important_index_pos[w] = dict()
+
+                        important_index_pos[w][url_map[url]] = important_tokens_pos[w]
+
+                # store the current indexes to file
+                # TODO
+                if sys.getsizeof(important_index_freq) > 700000:
+                    wrap_up_important()
                     write_file(file_counter)
                     file_counter += 1
                     os.chdir(ori_loc + "/" + path + "/" + web_folder)
@@ -202,6 +250,25 @@ def wrap_up():
     
     index_freq.clear()
     index_pos.clear()
+
+def wrap_up_important():
+    global final_important_index, important_index_freq, important_index_pos
+
+    for i in range(len(important_index_freq)):
+        key_list = list(important_index_freq.keys())
+        word = key_list[i]
+
+        new_posting = posting(word, dict(), list())
+        # update for the ID/freq dictionary
+        new_posting.freq_add(important_index_freq[key_list[i]])
+        # update for the ID/pos list
+        if(" " not in key_list[i]):
+            new_posting.pos_add(important_index_pos[key_list[i]])
+
+        final_important_index[word] = new_posting
+    
+    important_index_freq.clear()
+    important_index_pos.clear()
 
 # generate the ouput file
 def write_file(file_counter):
@@ -251,6 +318,26 @@ def write_file(file_counter):
 
     final_index.clear()
 
+
+def write_file_important(file_counter):
+    global important_index_freq, important_index_pos, final_important_index, ori_loc
+
+    # sort the words
+    final_important_index = dict(sorted(final_important_index.items(), key=lambda item: item[0]))
+
+    # output the final index
+    os.chdir(ori_loc)
+    os.chdir("index files")
+    file_name = "important_index.txt"
+    f = open(file_name, "w")
+    for i in final_important_index:
+        f.write(f"{{\"token\":\"{i}\", \"postings\":\"{final_important_index[i].get_freq()}\", \"positions\":\"{final_important_index[i].get_pos()}\"}}\n")
+        #f.write(f"{i}: {len(final_index[i].get_freq())} -> ID/freq: {final_index[i].get_freq()}, ID/pos: {final_index[i].get_pos()}\n")
+    f.close()
+
+    final_index.clear()
+
+
 def general_output():
     global url_lookup, url_map, total_doc, indexed_doc, dup_doc
 
@@ -285,6 +372,9 @@ def export_remain():
         wrap_up()
         write_file(file_counter)
 
+    if len(important_index_freq) != 0:
+        wrap_up_important()
+        write_file_important(file_counter)
 
 def main():
     global start_time
