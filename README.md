@@ -60,6 +60,6 @@ $$idf_{t} = log_{10} (N/df_{t})$$
 
 $$tf.idf_{(t, d)} = (1+log_{10}tf_{(t, d)}) \times log_{10} (N/df_{t}) $$
 
-### Score of a query of a document:
+### Score of query of a document:
 
 $$Score(q, d) = \sum_{t \in q \cap d} tf.idf_{(t, d)}$$
