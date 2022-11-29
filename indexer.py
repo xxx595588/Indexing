@@ -4,14 +4,19 @@ import nltk
 import re
 import time
 import shutil
+import sys
 from posting import posting
 from merge import merge
-import sys
 from bs4 import BeautifulSoup
 from nltk import ngrams
+
+# store the location of indexer.py
 ori_loc = os.getcwd()
 
+# partial indexer file counter
 file_counter = 1
+
+# url counter
 acc_url_counter = 1
 
 # combine version of frequency and position
@@ -54,13 +59,12 @@ stemmer = nltk.stem.SnowballStemmer("english")
 def tokenize(html_file):
     global tag
 
-    raw_data = json.load(open(html_file))
     # get the content
+    raw_data = json.load(open(html_file))
     soup = BeautifulSoup(raw_data["content"], features = "html.parser")
     tag_list = soup.find_all(tag, text=True)
 
     temp_ter = ""
-
     for s in tag_list:
         temp_ter += s.text
         temp_ter += "."
@@ -71,10 +75,12 @@ def tokenize(html_file):
     # to be removed word set (number or special character)
     tbr = set()
 
+    # remove any non-alphanumeric character
     for w in tokens:
         if len(w) == 1 or re.search("[^a-z0-9]", w):
             tbr.add(w)
 
+    # do up to trigram
     tokens_list = [w for w in tokens if w not in tbr]
     ngram_iteration = [2, 3]
     ngram_temp = list()
@@ -88,13 +94,13 @@ def tokenize(html_file):
 
     # dictionary of word/freq
     tokens_freq = dict()
+
     # dictionary of word/pos
     tokens_pos = dict()
+
+    # count for the word's frequency
     for i in range(len(tokens_list)):
-        # count for the word's frequency
-        #print(type(tokens_list[i]))
-        
-        #temporary need to change this to include ngrams wiht token positions
+        # section for ngram
         if(type(tokens_list[i]) == tuple):
            # print(tokens_list[i])
             ngramString = " ".join(list(tokens_list[i]))
@@ -103,6 +109,7 @@ def tokenize(html_file):
                 tokens_freq[ngramString] += 1
             else:
                 tokens_freq[ngramString] = 1
+        # section for single word
         else:
             if tokens_list[i] in tokens_freq:
                 tokens_freq[tokens_list[i]] += 1
@@ -119,7 +126,7 @@ def tokenize(html_file):
 
 # fetch all json file and tokenize the text from its content
 def fetch_data():
-    global ori_loc, url_map
+    global ori_loc, url_map, index_freq, index_pos, total_doc, indexed_doc, dup_doc, acc_url_counter, file_counter
 
     if os.path.exists("index files"):
         shutil.rmtree("index files")
@@ -129,8 +136,7 @@ def fetch_data():
     path = input("Input the path: ")
     os.chdir(path)
 
-    global index_freq, index_pos, total_doc, indexed_doc, dup_doc, acc_url_counter, file_counter
-
+    # process every json file
     for web_folder in os.listdir():
         os.chdir(web_folder)
         for html_file in os.listdir():
@@ -146,11 +152,10 @@ def fetch_data():
 
             total_doc += 1
 
+            # check for duplcation
             if hash_num not in dup:
                 indexed_doc += 1
                 dup.add(hash_num)
-
-                print(f"{acc_url_counter}: {url}")
                 url_map[url] = acc_url_counter
                 acc_url_counter += 1
 
@@ -170,7 +175,7 @@ def fetch_data():
 
                         index_pos[w][url_map[url]] = tokens_pos[w]
 
-                # store the current indexs to file
+                # store the current indexs to partial index file if size is over 700000 bytes
                 if sys.getsizeof(index_freq) > 700000:
                     wrap_up()
                     write_file(file_counter)
@@ -185,18 +190,17 @@ def fetch_data():
 
     os.chdir(ori_loc)
 
-# wrap up for the final indexer (combine index_freq and index_pos)
+# wrap up for the indexer (combine index_freq and index_pos)
 def wrap_up():
     global final_index, index_freq, index_pos
 
+    # integrate index_freq & index_pos to posting
     for i in range(len(index_freq)):
         key_list = list(index_freq.keys())
         word = key_list[i]
-
         new_posting = posting(word, dict(), list())
-        # update for the ID/freq dictionary
         new_posting.freq_add(index_freq[key_list[i]])
-        # update for the ID/pos list
+
         if(" " not in key_list[i]):
             new_posting.pos_add(index_pos[key_list[i]])
 
@@ -210,37 +214,8 @@ def write_file(file_counter):
     global index_freq, index_pos, final_index, ori_loc
 
     # sort the words
-    #index_freq = dict(sorted(index_freq.items(), key=lambda item: item[0]))
-    #index_pos = dict(sorted(index_pos.items(), key=lambda item: item[0]))
     final_index = dict(sorted(final_index.items(), key=lambda item: item[0]))
 
-    # sort the frequency by ID in index_freq
-    #for i in index_freq:
-        #index_freq[i] = dict(sorted(index_freq[i].items(), key=lambda item: item[0]))
-
-    """
-    # ouput the index with frequency:
-    # {word: {ID: freq}}
-    f = open("indexer_freq.txt", "w")
-    for i in index_freq:
-        f.write(f"{i}: {len(index_freq[i])} -> ID/freq: {index_freq[i]}\n")
-    f.close()
-
-    # ouput the index with pos:
-    # {word: {ID: [pos]}}
-    f = open("indexer_pos.txt", "w")
-    for i in index_pos:
-        f.write(f"{i} -> ID/pos: {index_pos[i]}\n")
-    f.close()
-
-    # output the url map
-    # url: ID
-    f = open("url_map.txt", "w")
-    for i in url_map:
-        f.write(f"{i}: {url_map[i]}\n")
-    f.close()
-
-    """
     # output the final index
     os.chdir(ori_loc)
     os.chdir("index files")
@@ -248,7 +223,6 @@ def write_file(file_counter):
     f = open(file_name, "w")
     for i in final_index:
         f.write(f"{{\"token\":\"{i}\", \"postings\":\"{final_index[i].get_freq()}\", \"positions\":\"{final_index[i].get_pos()}\"}}\n")
-        #f.write(f"{i}: {len(final_index[i].get_freq())} -> ID/freq: {final_index[i].get_freq()}, ID/pos: {final_index[i].get_pos()}\n")
     f.close()
 
     final_index.clear()
@@ -273,24 +247,15 @@ def general_output():
     f = open("url_lookup.txt", "w")
     for i in url_lookup:
         f.write(f"{{\"id\":\"{i}\", \"url\":\"{url_lookup[i]}\"}}\n")
-        #f.write(f"{i}: {url_lookup[i]}\n")
     f.close()
 
+# export the remaining data which is less than 700000 byte at the end
 def export_remain():
     global file_counter, index_freq
 
     if len(index_freq) != 0:
         wrap_up()
         write_file(file_counter)
-    '''
-    # output the url lookup table
-    # ID: url
-    f = open("url_lookup.txt", "w")
-    for i in url_lookup:
-        f.write(f"{{\"id\":\"{i}\", \"url\":\"{url_lookup[i]}\"}}\n")
-        #f.write(f"{i}: {url_lookup[i]}\n")
-    f.close()
-    '''
 
 def main():
     global start_time

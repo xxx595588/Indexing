@@ -41,7 +41,7 @@ def binary_search(mid_list, start, end, word, indexer_list, allPostings):
     else:
         return list()
 
-# calculate the tf-idf for query
+# query part of calculating the tf-idf
 def tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc):
     # get the tf-idf for query
     tf_query = list()
@@ -49,7 +49,6 @@ def tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc):
     found_terms = list()
     found_term_freq = list()
     raw_query = nltk.word_tokenize(raw_query)
-
     raw_query = [stemmer.stem(t.lower()) for t in raw_query]
     raw_query = " ".join(raw_query)
 
@@ -57,6 +56,7 @@ def tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc):
         found_terms.append(posting.get_word())
         found_term_freq.append(posting.get_freq())
 
+    # calculate td_idf for each term in queries
     for term in queries:
         if term not in found_terms:
             tf_query.append(0)
@@ -68,6 +68,7 @@ def tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc):
 
     tf_idf_query = list()
     length_query = 0
+
     # calculate tf_idf without normalization
     for i in range(len(tf_query)):
         tf_idf_query.append(tf_query[i] * idf_query[i])
@@ -75,14 +76,15 @@ def tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc):
 
     length_query = math.sqrt(length_query)
 
+    # normalization
     for i in range(len(tf_query)):
         # to prevent divide by zero error when searching for query that has no results
-        # ex: gibberish
         if length_query != 0:     
             tf_idf_query[i] = tf_idf_query[i]/length_query
 
     return tf_idf_query
 
+# document part of calculating the tf-idf
 def tf_idf_documents(queries, indexer_list):
     doc_union = set()
     word_list = list()
@@ -129,6 +131,7 @@ def ranking(raw_query, queries, indexer_list):
     tf_idf_d = tf_idf_documents(queries, indexer_list)
     top_five = dict()
 
+    # calculate the tf_idf for all eligible documents
     for doc_item in tf_idf_d:
         id = doc_item.get_id()
         tf_doc = doc_item.get_tf()
@@ -138,33 +141,29 @@ def ranking(raw_query, queries, indexer_list):
             sum += (tf_idf_q[i] * tf_doc[queries[i]])
         
         top_five[id] = sum
+
+        # only keep the top five result
         top_five = dict(sorted(top_five.items(), key=lambda item: item[1], reverse=True))
 
         if len(top_five) > 5:
             top_five.popitem()
 
-    #print(top_five)
-
     return list(top_five.keys())
-
 
 def search():
     query = input("Enter your query seperated by spaces: ")
     queries = nltk.word_tokenize(query)
     queries = [stemmer.stem(w.lower()) for w in queries]
 
+    # remove the term which is invlid
     tbr = list()
-
     for w in queries:
         if len(w) == 1 or re.search("[^a-z0-9]", w):
             tbr.append(w)
-    
     for w in tbr:
         queries.remove(w)
-    
-    #print(queries)
 
-    # doing ngram
+    # doing ngram for query
     global ngram_iteration
     ngram_temp = list()
 
@@ -178,6 +177,7 @@ def search():
     for i in range(len(queries)):
         if(type(queries[i]) == tuple):
             queries[i] = " ".join(list(queries[i]))
+
     # open indicator.txt file which can boost the binary search speed
     f = open("indicator.txt", "r")
     indicator = eval(f.readline()[:-1])
@@ -193,7 +193,7 @@ def search():
     global alphabet
     start = time.time()
 
-    # partition query's word into 26 sublist by their starting alphabet
+    # partition query's word into 36 sublist by their starting character
     partition_word = [None]*37
     for word in queries:
         if partition_word[alphabet.index(word[0])] is None:
@@ -231,8 +231,6 @@ def search():
                     mid_list = binary_search(mid_list, start_pos, end_pos, word, indexer_list, allPostings)
 
     top_five = ranking(query, queries, indexer_list)
-
-
     end = time.time()  
 
     url_result_list = list()

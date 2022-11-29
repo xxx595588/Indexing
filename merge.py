@@ -1,19 +1,20 @@
 import os
-from posting import posting
 import json
+from posting import posting
 
+# get the location of merge.py
 ori_loc = os.getcwd()
 path = "index files"
 output_file = "merged_indexer.txt"
 pos_counter = 0
 
-# used to indicate the staring position of each alphabet in the file
+# used to indicate the staring position of each alphabet & digit in the file
 alphabet_indicator = [-1]*37
 alphabet = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
 unique_token = 0
 
+# convert raw_data into posting
 def index_converter(raw_data):
-    # convert raw_data into posting
     loaded = json.loads(raw_data)
     word = loaded["token"]
     id_freq = eval(loaded["postings"])
@@ -21,6 +22,7 @@ def index_converter(raw_data):
 
     return posting(word, id_freq, id_pos)
 
+# merge all partial index files into one merged index file
 def merge():
     global ori_loc, path, output_file, alphabet, alphabet_indicator, pos_counter, unique_token
     
@@ -145,7 +147,8 @@ def merge():
         # check if reach end of file for all files
         if cur_posting.count("eof") == len(files_to_read):
             break
-
+        
+        # mark the end position
         alphabet_indicator[36] = pos_counter
 
         # write the indicator.txt file
@@ -159,6 +162,7 @@ def merge():
         f.write(f"{temp}]\n")
         f.close()
 
+    # append remaining info to general output
     f = open("general_output.txt", "a")
     index_file_size = os.path.getsize(output_file) / 1000
     f.write(f"Number of unique tokens: {unique_token}\n"

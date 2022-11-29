@@ -1,18 +1,14 @@
 
-bad:
-the future of the internet > 300 ms
-chicken
-gibberish - crashed our search before fixing
-aerospace
-nasa - first result doesnt contain nasa? its possible url might be out of date 
-openlab - first result same problem as nasa
-programming 
-B.S. Software Engineering -  crashes
-ics 46 - crashes
-
-
-
 good:
+the future of the internet
+chicken
+gibberish
+aerospace
+nasa
+openlab
+programming 
+B.S. Software Engineering
+ics 46
 alex thornton
 artificial intelligence
 artificial intelligence at uci
