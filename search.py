@@ -148,7 +148,7 @@ def ranking(raw_query, queries, indexer_list):
         if len(top_five) > 5:
             top_five.popitem()
 
-    return list(top_five.keys())
+    return list(top_five.keys()), len(tf_idf_d)
 
 def search():
     query = input("Enter your query seperated by spaces: ")
@@ -230,7 +230,7 @@ def search():
 
                     mid_list = binary_search(mid_list, start_pos, end_pos, word, indexer_list, allPostings)
 
-    top_five = ranking(query, queries, indexer_list)
+    top_five, result_counter = ranking(query, queries, indexer_list)
     end = time.time()  
 
     url_result_list = list()
@@ -247,7 +247,7 @@ def search():
         for i in range(len(url_result_list)):
             print(f"{i + 1}. {url_result_list[i]}")
 
-    print(f"\n{len(top_five)} results ({(end-start) * 1000} milliseconds)")
+    print(f"\n{result_counter} results ({(end-start) * 1000} milliseconds)")
     print(f"-----------------------------end of search-----------------------------")
 
 while True:
