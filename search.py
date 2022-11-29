@@ -150,8 +150,8 @@ def ranking(raw_query, queries, indexer_list):
 
     return list(top_five.keys()), len(tf_idf_d)
 
-def search():
-    query = input("Enter your query seperated by spaces: ")
+def search(query):
+    #query = input("Enter your query seperated by spaces: ")
     queries = nltk.word_tokenize(query)
     queries = [stemmer.stem(w.lower()) for w in queries]
 
@@ -235,6 +235,8 @@ def search():
 
     url_result_list = list()
 
+
+    printString = ""
     # look up the url
     for id in top_five:
         line = linecache.getline("url_lookup.txt", id)
@@ -243,12 +245,18 @@ def search():
 
     if len(url_result_list) == 0:
         print("No matched result was found.")
+        printString += "No matched result was found.\n"
     else:
         for i in range(len(url_result_list)):
             print(f"{i + 1}. {url_result_list[i]}")
+            printString += f"{i + 1}. {url_result_list[i]}" + "\n"
 
-    print(f"\n{result_counter} results ({(end-start) * 1000} milliseconds)")
+        
+    printString += f"\n{len(top_five)} results ({(end-start) * 1000} milliseconds)" + "\n"
+    printString += f"-----------------------------end of search-----------------------------" + "\n"
+
+    print(f"\n{len(top_five)} results ({(end-start) * 1000} milliseconds)")
     print(f"-----------------------------end of search-----------------------------")
-
-while True:
-    search()
+    return printString
+# while True:
+#     search()
