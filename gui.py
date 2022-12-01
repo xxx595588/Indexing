@@ -9,27 +9,30 @@ frame.geometry('600x300')
 def printResults():
     inp = inputtxt.get(1.0, "end-1c")
     retString = search(inp)
-    lbl.config(text = retString)
+    resultsText.delete("1.0","end")
+    resultsText.insert("1.0",retString)
+    inputtxt.delete("1.0","end")
+
 
 
 def handler(e):
     inp = inputtxt.get(1.0, "end-1c")
     retString = search(inp)
-    lbl.config(text = retString)
+    resultsText.delete("1.0","end")
+    resultsText.insert("1.0",retString)
+    inputtxt.delete("1.0","end")
+
+
 
 # Query Input
-inputtxt = tk.Text(frame,
-                   height = 1,
-                   width = 50)
+inputtxt = tk.Text(frame, height = 1, width = 50, relief="ridge")
 
-inputtxt.pack(side = tk.BOTTOM)
+inputtxt.pack(side = tk.TOP)
 
 inputtxt.place(x = 100, y = 10)
 
 # Search Button
-printButton = tk.Button(frame,
-                        text = "Search",
-                        command = printResults)
+printButton = tk.Button(frame, text = "Search", command = printResults)
 printButton.pack(side = tk.BOTTOM)
 
 printButton.place(x = 275, y = 40)
@@ -37,9 +40,17 @@ printButton.place(x = 275, y = 40)
 frame.bind('<Return>', handler)
 
 
-# Results Label
-lbl = tk.Label(frame, text = "", wraplength=500)
-lbl.pack(side = tk.BOTTOM, ipady = 30)
+# Results Text Box
+
+scroll=tk.Scrollbar(frame, orient='vertical')
+
+resultsText = tk.Text(frame, width=500,height = 14, yscrollcommand=scroll.set)
+scroll.pack(side="right", fill='y')
+
+
+
+resultsText.pack(side = tk.BOTTOM)
+scroll.config(command=resultsText.yview)
 
 frame.resizable(False,False) # prevent resizing of window
 frame.mainloop()
