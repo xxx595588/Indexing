@@ -52,6 +52,16 @@ def tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc):
     found_term_imp_freq = list()
     raw_query = nltk.word_tokenize(raw_query)
     raw_query = [stemmer.stem(t.lower()) for t in raw_query]
+
+    tbr = list()
+    for raw in raw_query:
+        if re.search("[^a-z0-9]", raw):
+            tbr.append(raw)
+
+    for w in tbr:
+        if w in raw_query:
+            raw_query.remove(w)
+
     raw_query = " ".join(raw_query)
 
     for posting in indexer_list:
@@ -59,7 +69,6 @@ def tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc):
         found_term_freq.append(posting.get_freq())
         found_term_imp_freq.append(posting.get_imp_freq())
         
-
     # calculate td_idf for each term in queries
     for term in queries:
         if term not in found_terms:
