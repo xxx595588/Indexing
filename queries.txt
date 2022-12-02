@@ -1,14 +1,29 @@
+bad:
+the future of the internet 
+Error: > 300 ms query time
+Fix: fixed by applying digit characters to eliminate unecessary search
+
+
+
+ics 46
+ics 45j
+B.S. Software Engineering 
+Error: Crashed our search engine before since we only considered letters
+Fix: fixed by allowing all alphanumeric characters
+
+
+computer
+Error: Results string was too long that it messed up our gui display
+Fix: Changed the gui to display texts in a tkinter Text widget to allow for longer results
+
 
 good:
-the future of the internet
 chicken
 gibberish
 aerospace
 nasa
-openlab
-programming 
-B.S. Software Engineering
-ics 46
+openlab 
+programming
 alex thornton
 artificial intelligence
 artificial intelligence at uci
