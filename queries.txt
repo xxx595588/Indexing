@@ -16,6 +16,9 @@ computer
 Error: Results string was too long that it messed up our gui display
 Fix: Changed the gui to display texts in a tkinter Text widget to allow for longer results
 
+That's what it felt like, anyway
+Error: syntax error for our tf-dif calculation
+Fix: Fixed bug by counting term frequency correctly
 
 good:
 chicken
