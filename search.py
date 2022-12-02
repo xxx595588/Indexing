@@ -27,7 +27,7 @@ def binary_search(mid_list, start, end, word, indexer_list, allPostings):
 
         # compare word with mid-th word
         if word == loaded["token"]:
-            postings = posting(word, eval(loaded["postings"]), eval(loaded["positions"]))
+            postings = posting(word, eval(loaded["postings"]), eval(loaded["positions"]), eval(loaded["imp_postings"]), eval(loaded["imp_positions"]))
             indexer_list.append(postings)
             allPostings.append(postings.get_freq().keys())
             return mid_list
