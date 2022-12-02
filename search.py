@@ -30,6 +30,7 @@ def binary_search(mid_list, start, end, word, indexer_list, allPostings):
             postings = posting(word, eval(loaded["postings"]), eval(loaded["positions"]), eval(loaded["imp_postings"]), eval(loaded["imp_positions"]))
             indexer_list.append(postings)
             allPostings.append(postings.get_freq().keys())
+            allPostings.append(postings.get_imp_freq().keys())
             return mid_list
         # search start to mid - 1
         elif word < loaded["token"]:
@@ -48,6 +49,7 @@ def tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc):
     idf_query = list()
     found_terms = list()
     found_term_freq = list()
+    found_term_imp_freq = list()
     raw_query = nltk.word_tokenize(raw_query)
     raw_query = [stemmer.stem(t.lower()) for t in raw_query]
     raw_query = " ".join(raw_query)
@@ -55,6 +57,8 @@ def tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc):
     for posting in indexer_list:
         found_terms.append(posting.get_word())
         found_term_freq.append(posting.get_freq())
+        found_term_imp_freq.append(posting.get_imp_freq())
+        
 
     # calculate td_idf for each term in queries
     for term in queries:
@@ -64,7 +68,7 @@ def tf_idf_query(raw_query, queries, indexer_list, num_indexed_doc):
         else:
             index = found_terms.index(term)
             tf_query.append(1 + math.log(raw_query.count(term), 10))
-            idf_query.append(math.log(num_indexed_doc/len(found_term_freq[index]), 10))
+            idf_query.append(math.log(num_indexed_doc/(len(found_term_freq[index]) + len(found_term_imp_freq[index])), 10))
 
     tf_idf_query = list()
     length_query = 0
@@ -95,6 +99,9 @@ def tf_idf_documents(queries, indexer_list):
         for id in i.get_freq().keys():
             if id not in doc_union:
                 doc_union.add(id)
+        for id in i.get_imp_freq().keys():
+            if id not in doc_union:
+                doc_union.add(id)
     
     doc_union = sorted(list(doc_union))
     doc_list = list()
@@ -108,17 +115,21 @@ def tf_idf_documents(queries, indexer_list):
                 index = word_list.index(q)
                 if index >= 0:
                     freq = indexer_list[index].get_freq()
+                    term_freq = 0
                     if freq.get(id) != None:
-                        term_freq = indexer_list[index].get_freq()[id] 
-                        important_term_freq = 0
+                        term_freq = freq[id] 
                         
-                        if indexer_list[index].get_imp_freq().get(id) != None:
-                            important_term_freq = indexer_list[index].get_imp_freq()[id]  
-                        
-                        important_term_weight = 5
+                    imp_freq = indexer_list[index].get_imp_freq()
+                    important_term_freq = 0
+                    important_term_weight = 5
+                    if imp_freq.get(id) != None:
+                        important_term_freq = imp_freq[id]  
+
+                    tf = 0
+                    if (term_freq + (important_term_freq * important_term_weight)) > 0:
                         tf = 1 + math.log(term_freq + (important_term_freq * important_term_weight), 10)
-                        doc_item.tf_add(q, tf)
-                        sum += tf**2
+                    doc_item.tf_add(q, tf)
+                    sum += tf**2
 
         length_doc = math.sqrt(sum)
         

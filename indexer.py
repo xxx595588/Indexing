@@ -254,6 +254,21 @@ def wrap_up():
 
         final_index[word] = new_posting
     
+    for i in range(len(important_index_freq)):
+        key_list = list(important_index_freq.keys())
+        word = key_list[i]
+
+        # if the word isn't already in the final index
+        # (it only shows up in headers or in bold)
+        if word not in final_index.keys():
+            new_posting = posting(word, dict(), list(), dict(), list()) 
+            new_posting.imp_freq_add(important_index_freq[word])
+
+            if(" " not in key_list[i]):
+                new_posting.imp_pos_add(important_index_pos[word])
+    
+            final_index[word] = new_posting
+
     index_freq.clear()
     index_pos.clear()
     important_index_freq.clear()

@@ -16,7 +16,6 @@ unique_token = 0
 # convert raw_data into posting
 def index_converter(raw_data):
     loaded = json.loads(raw_data)
-    print(loaded)
     word = loaded["token"]
     id_freq = eval(loaded["postings"])
     id_pos = eval(loaded["positions"])
