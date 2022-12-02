@@ -11,10 +11,12 @@ word: posting
 The structure of postion is defined in `posting.py`
 ```
 class posting:
-    def __init__(self, word, freq, pos):
+    def __init__(self, word, freq, pos, imp_freq, imp_pos):
         self.word = word
         self.freq = freq
         self.pos = pos
+        self.imp_freq = imp_freq
+        self.imp_pos = imp_pos
 ```
 * freq is the dictionary whose key is docID and value is the frequency of the word
 * pos is the dictionary whose key is docID and value is the list of position that word appeares
