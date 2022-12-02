@@ -109,7 +109,13 @@ def tf_idf_documents(queries, indexer_list):
                 if index >= 0:
                     freq = indexer_list[index].get_freq()
                     if freq.get(id) != None:
-                        tf = 1 + math.log(indexer_list[index].get_freq()[id], 10)
+                        term_freq = indexer_list[index].get_freq()[id] 
+                        important_term_freq = 0
+                        
+                        if indexer_list[index].get_imp_freq().get(id) != None:
+                            important_term_freq = indexer_list[index].get_imp_freq()[id]  
+                        
+                        tf = 1 + math.log(term_freq + important_term_freq, 10)
                         doc_item.tf_add(q, tf)
                         sum += tf**2
 
@@ -172,6 +178,7 @@ def search(query):
         for ngram in ngramTokens:
             ngram_temp.append(ngram)
 
+    # queries = each individual word in the query, and every ngram for the query
     queries += ngram_temp
 
     for i in range(len(queries)):

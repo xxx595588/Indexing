@@ -16,11 +16,14 @@ unique_token = 0
 # convert raw_data into posting
 def index_converter(raw_data):
     loaded = json.loads(raw_data)
+    print(loaded)
     word = loaded["token"]
     id_freq = eval(loaded["postings"])
     id_pos = eval(loaded["positions"])
+    imp_freq = eval(loaded["imp_postings"])
+    imp_pos = eval(loaded["imp_positions"])
 
-    return posting(word, id_freq, id_pos)
+    return posting(word, id_freq, id_pos, imp_freq, imp_pos)
 
 # merge all partial index files into one merged index file
 def merge():
@@ -84,7 +87,7 @@ def merge():
             # write the signle posting to the disk
             os.chdir(ori_loc)
             f = open(output_file, "a")
-            f.write(f"{{\"token\":\"{to_be_merged.get_word()}\", \"postings\":\"{to_be_merged.get_freq()}\", \"positions\":\"{to_be_merged.get_pos()}\"}}\n")
+            f.write(f"{{\"token\":\"{to_be_merged.get_word()}\", \"postings\":\"{to_be_merged.get_freq()}\", \"positions\":\"{to_be_merged.get_pos()}\", \"imp_postings\":\"{to_be_merged.get_imp_freq()}\", \"imp_positions\":\"{to_be_merged.get_imp_pos()}\"}}\n")
             f.close()
 
             start_char = to_be_merged.get_word()[0]
@@ -118,18 +121,24 @@ def merge():
             word = to_be_merged[0].get_word()
             new_id_freq = dict()
             new_id_pos = dict()
+            new_imp_freq = dict()
+            new_imp_pos = dict()
             
             # merge the diction of id/freq and id/pos
             for p in to_be_merged:
                 new_id_freq |= p.get_freq()
                 new_id_pos |= p.get_pos()
+                new_imp_freq |= p.get_imp_freq()
+                new_imp_pos |= p.get_imp_pos()
                 
             new_id_freq = dict(sorted(new_id_freq.items(), key=lambda item: item[0]))
             new_id_pos = dict(sorted(new_id_pos.items(), key=lambda item: item[0]))
+            new_imp_freq = dict(sorted(new_imp_freq.items(), key=lambda item: item[0]))
+            new_imp_pos = dict(sorted(new_imp_pos.items(), key=lambda item: item[0]))
             
             os.chdir(ori_loc)
             f = open(output_file, "a")
-            f.write(f"{{\"token\":\"{word}\", \"postings\":\"{new_id_freq}\", \"positions\":\"{new_id_pos}\"}}\n")
+            f.write(f"{{\"token\":\"{word}\", \"postings\":\"{new_id_freq}\", \"positions\":\"{new_id_pos}\", \"imp_postings\":\"{new_imp_freq}\", \"imp_positions\":\"{new_imp_pos}\"}}\n")
             f.close()
 
             start_char = word[0]

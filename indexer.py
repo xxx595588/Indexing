@@ -21,7 +21,6 @@ acc_url_counter = 1
 
 # combine version of frequency and position
 final_index = dict()
-final_important_index = dict()
 
 # focuse on these tags for indexing
 tag = ["title", "h1", "h2", "h3", "h4", "h5", "h6", "b", "strong"]
@@ -199,13 +198,6 @@ def fetch_data():
 
                         index_pos[w][url_map[url]] = main_tokens_pos[w]
 
-                # store the current indexs to partial index file if size is over 700000 bytes
-                if sys.getsizeof(index_freq) > 700000:
-                    wrap_up()
-                    write_file(file_counter)
-                    file_counter += 1
-                    os.chdir(ori_loc + "/" + path + "/" + web_folder)
-
                 # IMPORTANT WORDS INDEX
                 for w in important_tokens:
                     # section for index frequency
@@ -223,10 +215,9 @@ def fetch_data():
 
                         important_index_pos[w][url_map[url]] = important_tokens_pos[w]
 
-                # store the current indexes to file
-                # TODO
-                if sys.getsizeof(important_index_freq) > 700000:
-                    wrap_up_important()
+                # store the current indexs to partial index file if size is over 700000 bytes
+                if sys.getsizeof(index_freq) > 700000:
+                    wrap_up()
                     write_file(file_counter)
                     file_counter += 1
                     os.chdir(ori_loc + "/" + path + "/" + web_folder)
@@ -241,39 +232,30 @@ def fetch_data():
 
 # wrap up for the indexer (combine index_freq and index_pos)
 def wrap_up():
-    global final_index, index_freq, index_pos
+    global final_index, index_freq, index_pos, important_index_freq, important_index_pos
 
-    # integrate index_freq & index_pos to posting
+
+    # integrate index_freq, index_pos, important_index_freq, & important_index_pos to posting
     for i in range(len(index_freq)):
         key_list = list(index_freq.keys())
         word = key_list[i]
-        new_posting = posting(word, dict(), list())
-        new_posting.freq_add(index_freq[key_list[i]])
+        new_posting = posting(word, dict(), list(), dict(), list())
+        new_posting.freq_add(index_freq[word])
 
         if(" " not in key_list[i]):
-            new_posting.pos_add(index_pos[key_list[i]])
+            new_posting.pos_add(index_pos[word])
+
+        imp_key_list = list(important_index_freq.keys())
+        if(word in imp_key_list):
+            new_posting.imp_freq_add(index_freq[word]) 
+
+            if(" " not in key_list[i]):
+                new_posting.imp_pos_add(index_pos[word])
 
         final_index[word] = new_posting
     
     index_freq.clear()
     index_pos.clear()
-
-def wrap_up_important():
-    global final_important_index, important_index_freq, important_index_pos
-
-    for i in range(len(important_index_freq)):
-        key_list = list(important_index_freq.keys())
-        word = key_list[i]
-
-        new_posting = posting(word, dict(), list())
-        # update for the ID/freq dictionary
-        new_posting.freq_add(important_index_freq[key_list[i]])
-        # update for the ID/pos list
-        if(" " not in key_list[i]):
-            new_posting.pos_add(important_index_pos[key_list[i]])
-
-        final_important_index[word] = new_posting
-    
     important_index_freq.clear()
     important_index_pos.clear()
 
@@ -290,26 +272,7 @@ def write_file(file_counter):
     file_name = "index_" + str(file_counter) + ".txt"
     f = open(file_name, "w")
     for i in final_index:
-        f.write(f"{{\"token\":\"{i}\", \"postings\":\"{final_index[i].get_freq()}\", \"positions\":\"{final_index[i].get_pos()}\"}}\n")
-    f.close()
-
-    final_index.clear()
-
-
-def write_file_important(file_counter):
-    global important_index_freq, important_index_pos, final_important_index, ori_loc
-
-    # sort the words
-    final_important_index = dict(sorted(final_important_index.items(), key=lambda item: item[0]))
-
-    # output the final index
-    os.chdir(ori_loc)
-    os.chdir("index files")
-    file_name = "important_index.txt"
-    f = open(file_name, "w")
-    for i in final_important_index:
-        f.write(f"{{\"token\":\"{i}\", \"postings\":\"{final_important_index[i].get_freq()}\", \"positions\":\"{final_important_index[i].get_pos()}\"}}\n")
-        #f.write(f"{i}: {len(final_index[i].get_freq())} -> ID/freq: {final_index[i].get_freq()}, ID/pos: {final_index[i].get_pos()}\n")
+        f.write(f"{{\"token\":\"{i}\", \"postings\":\"{final_index[i].get_freq()}\", \"positions\":\"{final_index[i].get_pos()}\", \"imp_postings\":\"{final_index[i].get_imp_freq()}\", \"imp_positions\":\"{final_index[i].get_imp_pos()}\"}}\n")
     f.close()
 
     final_index.clear()
@@ -344,9 +307,6 @@ def export_remain():
         wrap_up()
         write_file(file_counter)
 
-    if len(important_index_freq) != 0:
-        wrap_up_important()
-        write_file_important(file_counter)
 def main():
     global start_time
     start_time = time.time()
