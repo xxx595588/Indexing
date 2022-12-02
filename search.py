@@ -115,7 +115,8 @@ def tf_idf_documents(queries, indexer_list):
                         if indexer_list[index].get_imp_freq().get(id) != None:
                             important_term_freq = indexer_list[index].get_imp_freq()[id]  
                         
-                        tf = 1 + math.log(term_freq + important_term_freq, 10)
+                        important_term_weight = 5
+                        tf = 1 + math.log(term_freq + (important_term_freq * important_term_weight), 10)
                         doc_item.tf_add(q, tf)
                         sum += tf**2
 
