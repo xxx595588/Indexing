@@ -252,7 +252,7 @@ def search(query):
             printString += f"{i + 1}. {url_result_list[i]}" + "\n"
 
         
-    printString += f"\n{len(top_five)} results ({(end-start) * 1000} milliseconds)" + "\n"
+    printString += f"\n{result_counter} results ({(end-start) * 1000} milliseconds)" + "\n"
     printString += f"-----------------------------end of search-----------------------------" + "\n"
 
     print(f"\n{len(top_five)} results ({(end-start) * 1000} milliseconds)")
