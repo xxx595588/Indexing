@@ -15,11 +15,11 @@ def predict():
     #Get search query
     query = request.form.get('Query')
     retString = search(query)
-    return render_template('template.html', prediction_text=retString)
+    return render_template('template.html', prediction_text = retString)
 
 
 
 
 # boilerplate flask app code
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
