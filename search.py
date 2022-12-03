@@ -190,17 +190,18 @@ def search(query):
     for w in tbr:
         queries.remove(w)
 
-    # doing ngram for query
-    global ngram_iteration
-    ngram_temp = list()
+    if len(queries) < 20:
+        # doing ngram for query
+        global ngram_iteration
+        ngram_temp = list()
 
-    for iter in ngram_iteration:
-        ngramTokens = list(ngrams(queries, iter))
-        for ngram in ngramTokens:
-            ngram_temp.append(ngram)
+        for iter in ngram_iteration:
+            ngramTokens = list(ngrams(queries, iter))
+            for ngram in ngramTokens:
+                ngram_temp.append(ngram)
 
-    # queries = each individual word in the query, and every ngram for the query
-    queries += ngram_temp
+        # queries = each individual word in the query, and every ngram for the query
+        queries += ngram_temp
 
     for i in range(len(queries)):
         if(type(queries[i]) == tuple):
