@@ -27,9 +27,9 @@ The url can be looked up from the url_lookup by docID, `url_lookup` is a diction
 docID: url
 ```
 \
-For example, the word `rop` has data structure like:
+For example, the word `helen` has data structure like:
 ```
-rop: 3 -> ID/freq: {13826: 2, 14537: 2, 17710: 1}, ID/pos: {13826: [50, 195], 14537: [19, 98], 17710: [54]}
+{"token":"helen", "postings":"{10014: 1, 20940: 1}", "positions":"{10014: [4], 20940: [1]}", "imp_postings":"{6312: 2, 10014: 1, 10473: 1, 20940: 1, 21566: 2}", "imp_positions":"{6312: [3, 6], 10014: [4], 10473: [1], 20940: [1], 21566: [3, 5]}"}
 ```
 
 \
