@@ -1,6 +1,15 @@
-# Search-Engine-Group-10
+# UCI Search Engine
 
-## - Indexing
+## Table of contents
+* [Indexing](#indexing)
+* [Retrieval](#retrieval)
+    * [Log-frequency weighting](#log-frequency-weighting)
+    * [Inverse document frequency](#inverse-document-frequency)
+    * [tf-idf weighting](#tf-idf-weighting)
+    * [Score of query of a document](#score-of-query-of-a-document)
+
+
+## Indexing
 
 The indexer.py will read all given json files to create the inverted index.
 The structure of the index is a dictionary whose key is word and value is posting.
@@ -37,7 +46,7 @@ According to the considerable data collection, the program will store the partia
 Finally, all partial indexing files will be merged into one file called `merged_indexer`, please reference to `merge.py`.
 
 
-## - Retrieval
+## Retrieval
 
 Most of the retrieving process are done in `search.py`, the search adopts binary search to retrieve given query in the corpus which is `merged_indexer`.
 
